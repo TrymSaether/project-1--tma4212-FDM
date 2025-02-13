@@ -1,7 +1,6 @@
 % !TeX root = main.tex
-\documentclass[a4paper,12pt]{article}
+\documentclass[a4paper,12pt]{report}
 \usepackage{refs/trymtex}
-
 
 \title{Numerical Solution of Differential Equations - Project 1}
 \author[1]{Sæther, Trym}
@@ -16,6 +15,18 @@
 \begin{abstract}
 This report presents the numerical solution of a time-dependent problem using finite difference methods. We analyze the stability and accuracy of different schemes and compare theoretical results with numerical experiments. The application of the schemes to a realistic problem is also discussed.
 \end{abstract}
+
+\tableofcontents
+\newpage
+
+\include{sections/introduction}
+\include{sections/theoretical_background}
+\include{sections/problem_description}
+\include{sections/methodology}
+\include{sections/numerical_results}
+\include{sections/discussion}
+\include{sections/conclusion}
+
 
 \bibliographystyle{plain}
 \bibliography{refs/references}
