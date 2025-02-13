@@ -1,14 +1,13 @@
-\documentclass{article}
+% !TeX root = main.tex
+\documentclass[a4paper,12pt]{article}
 
-\usepackage{trymtex}
+\usepackage{refs/trymtex}
 \usepackage{lipsum}
 
 \title{Numerical Solution of Differential Equations - Project 1}
 \author[1]{Sæther, Trym}
 \author[2]{Haugen, Tor Ludvig}
 \affil[1]{Department of Mathematical Sciences, NTNU}
-\affil[2]{Department of Physics, NTNU}
-\affil[3]{Department of Computer Science, NTNU}
 \date{February 28, 2025}
 
 \begin{document}
@@ -22,23 +21,26 @@ This report presents the numerical solution of a time-dependent problem using fi
 \section{Introduction}
 \lipsum[1]
 
-\section{Problem Description}
-\subsection{Problem 1}
+\section{Theoretical Background}
 \lipsum[2]
 
-\subsection{Problem 2}
+\section{Problem Description}
+\subsection{Problem 1}
 \lipsum[3]
+
+\subsection{Problem 2}
+\lipsum[4]
 
 \section{Methodology}
 \subsection{Finite Difference Schemes}
-\lipsum[4]
+\lipsum[5]
 
 \subsection{Error and Stability Analysis}
-\lipsum[5]
+\lipsum[6]
 
 \section{Numerical Results}
 \subsection{Problem 1}
-\lipsum[6]
+\lipsum[7]
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{example-image-a}
@@ -47,28 +49,28 @@ This report presents the numerical solution of a time-dependent problem using fi
 \end{figure}
 
 \subsection{Problem 2}
-\lipsum[7]
+\lipsum[8]
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{example-image-b}
-    \caption{Example plot for Problem 2.}
+    \caption{Example plot for Problem 2\cite{nocedalwright2006numerical}.}
     \label{fig:problem2}
 \end{figure}
 
 \section{Discussion}
-\lipsum[8]
+\lipsum[9]
 
 \section{Conclusion}
-\lipsum[9]
+\lipsum[10]
 
 \section*{Acknowledgements}
 We would like to thank the teaching assistants for their guidance and support throughout this project.
 
 \bibliographystyle{plain}
-\bibliography{references}
+\bibliography{refs/references}
 
 \appendix
 \section{Appendix: Python Code}
-\inputminted{python}{code.py}
+\inputminted{python}{code/code.py}
 
 \end{document}
