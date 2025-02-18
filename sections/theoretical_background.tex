@@ -8,18 +8,6 @@
   where \(p\) and \(q\) are the order of the spatial and temporal discretizations, respectively.
 \end{definition}
 
-\begin{lemma}{Consistency}{consistency}
-  Suppose the solution \(u\) of \(u_t = \mu u_{xx} + a u\) is sufficiently smooth on the given space-time domain.
-  Then the local truncation error of the above scheme is \(\mathcal{O}(k^2 + h^2)\), and thus the method is second-order accurate in both time and space.
-  
-  \[
-    \norm{\tau_m^n} = \norm{u(x_m, t_n) - U_m^n} = \mathcal{O}(h^2 + k^2) \quad \text{as} \quad h, k \to 0
-  \]
-
-\end{lemma}
-
-
-
 
 \paragraph{Notation}
 \begin{tabular}{ll}

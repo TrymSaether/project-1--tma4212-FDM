@@ -108,7 +108,7 @@ It approximates the time derivative with a forward difference and the spatial de
 The Crank-Nicolson scheme is an implicit method that approximates the spatial derivative at the midpoint between time steps. It is unconditionally stable and second-order accurate in time and space.
 \begin{align*}
   U_m^\star & = U_m^n + \frac{r}{2} \left( \delta_x^2 U_m^\star + \delta_x^2 U_m^n \right) + k f(U_m^n), \quad r = \frac{\mu k}{h^2} \\
-  U_m^{n+1} & = U_m^\star + \frac{k}{2} \left( f(U_m^\star) - f(U_m^{n+1}) \right) \tag{Crank-Nicolson}
+  U_m^{n+1} & = U_m^\star + \frac{k}{2} \left( f(U_m^\star) - f(U_m^n) \right) \tag{Crank-Nicolson}
 \end{align*}
 
 \section{Error Analysis}
@@ -135,25 +135,95 @@ We want to find the local truncation error (LTE) of the Crank-Nicolson scheme, w
 
 \paragraph{Temporal Taylor Expansions}
 \begin{align*}
-  u_m^{n+1} & \approx u_m^n + k \partial_t u_m^n + \frac{k^2}{2} \partial_t^2 u_m^n + \frac{k^3}{6} \partial_t^3 u_m^n + \mathcal{O}(k^4)                    \\
-  u_m^\star & \approx u_m^n + \Phi k \partial_t u_m^n + \frac{(\Phi k)^2}{2} \partial_t^2 u_m^n + \frac{(\Phi k)^3}{6} \partial_t^3 u_m^n + \mathcal{O}(k^4) \\
-  &= u_m^n + \Phi k \left( \mu \partial_x^2 u_m^n + a u_m^n \right) + \frac{(\Phi k)^2}{2} \left( \mu \partial_t^2 u_m^n + a \partial_t u_m^n \right) + \mathcal{O}(k^4)
+  u_m^{n+1} & \approx u_m^n + k \partial_t u_m^n + \frac{k^2}{2} \partial_t^2 u_m^n + \frac{k^3}{6} \partial_t^3 u_m^n + \mathcal{O}(k^4)                                                                                                            \\
+  u_m^\star & \approx u_m^n + \Phi k \partial_t u_m^n + \frac{(\Phi k)^2}{2} \partial_t^2 u_m^n + \frac{(\Phi k)^3}{6} \partial_t^3 u_m^n + \mathcal{O}(k^4)                                                                                         \\
+            & = u_m^n + \Phi k \left(\mu \partial_x^2 u_m^n + a u_m^n\right) + \frac{(\Phi k)^2}{2} \left(\mu \partial_x^2 \left(\mu \partial_x^2 u_m^n + a u_m^n\right) + a \left(\mu \partial_x^2 u_m^n + a u_m^n\right)\right) + \mathcal{O}(k^4) \\
+\end{align*}
+
+\paragraph{Spatial and Temporal Expansion}
+\begin{align*}
+  u_{m+1}^\star & \approx u_m^n + \left(\Phi k \partial_t u_m^n + h \partial_x u_m^n\right) + \frac{1}{2}\left(\Phi^2 k^2 \partial_t^2 u_m^n + h^2 \partial_x^2 u_m^n\right) + \mathcal{O}(h^3 + k^3) \\
+  u_{m-1}^\star & \approx u_m^n + \left(\Phi k \partial_t u_m^n - h \partial_x u_m^n\right) + \frac{1}{2}\left(\Phi^2 k^2 \partial_t^2 u_m^n + h^2 \partial_x^2 u_m^n\right) + \mathcal{O}(h^3 + k^3) \\
 \end{align*}
 
 Then we substitute these expansions into the finite difference schemes to analyze the local truncation error (LTE):
 
 \begin{align*}
-  \delta_x^2 u_m^n &= h^2 \partial_x^2 u_m^n + \mathcal{O}(h^4) \\
-  \delta_x^2 u_m^\star &= h^2 \partial_x^2 u_m^\star + \mathcal{O}(h^4)\\
-  &= h^2 \partial_x^2 \left( u_m^n + \Phi k \partial_t u_m^n + \frac{(\Phi k)^2}{2} \partial_t^2 u_m^n + \mathcal{O}(k^3) \right) + \mathcal{O}(h^4) \\
-  &= h^2 \partial_x^2 u_m^n + \Phi k h^2 \partial_x^2 \partial_t u_m^n + \frac{(\Phi k)^2}{2} h^2 \partial_x^2 \partial_t^2 u_m^n + \mathcal{O}(h^4) \\
-  &= h^2 \partial_x^2 u_m^n + \Phi k h^2 \partial_x^2 \left( \mu \partial_x^2 u_m^n + a u_m^n \right) + \frac{(\Phi k)^2}{2} h^2 \partial_x^2 \left( \mu \partial_t^2 u_m^n + a \partial_t u_m^n \right) + \mathcal{O}(h^4) \\
+  \delta_x^2 u_m^n & = u_{m+1}^n - 2 u_m^n + u_{m-1}^n                                                                                                    \\
+                   & = \left[ u_m^n + h \partial_x u_m^n + \frac{h^2}{2} \partial_x^2 u_m^n + \frac{h^3}{6} \partial_x^3 u_m^n + \mathcal{O}(h^4) \right] \\
+                   & - 2 u_m^n                                                                                                                            \\
+                   & + \left[ u_m^n - h \partial_x u_m^n + \frac{h^2}{2} \partial_x^2 u_m^n - \frac{h^3}{6} \partial_x^3 u_m^n + \mathcal{O}(h^4) \right] \\
+                   & = h^2 \partial_x^2 u_m^n + \mathcal{O}(h^4)
 \end{align*}
 
-Then in the first step of the Crank-Nicolson scheme, we have
 \begin{align*}
-  \Delta_{\text{CN1}} &= u_m^\star - \left[u_m^n + \frac{r}{2} \left( \delta_x^2 U_m^\star + \delta_x^2 U_m^n \right) + k a U_m^n\right]\\
-  &= \left[ u_m^n + \Phi k \partial_t u_m^n + \frac{(\Phi k)^2}{2} \partial_t^2 u_m^n + \mathcal{O}(k^3) \right] \\
-  &\; - \left[ u_m^n + \frac{r}{2} \left( h^2 \partial_x^2 u_m^\star + h^2 \partial_x^2 u_m^n \right) + k a U_m^n \right] \\
-  &= \Phi k \partial_t u_m^n + \frac{(\Phi k)^2}{2} \partial_t^2 u_m^n - \frac{r}{2} h^2 \partial_x^2 u_m^\star + \frac{r}{2} h^2 \partial_x^2 u_m^n + \mathcal{O}(h^4 + k^3) \\
+  \delta_x^2 u_m^\star & = u_{m+1}^\star - 2 u_m^\star + u_{m-1}^\star                                                                                                                                                                                                                                 \\
+                       & = \left[ u_m^n + \left(\Phi k \partial_t u_m^n + h \partial_x u_m^n\right) + \frac{1}{2}\left(\Phi^2 k^2 \partial_t^2 u_m^n + h^2 \partial_x^2 u_m^n\right) + \frac{1}{6}\left(\Phi^3 k^3 \partial_t^3 u_m^n + h^3 \partial_x^3 u_m^n\right) + \mathcal{O}(h^4 + k^4) \right] \\
+                       & - 2 \left[ u_m^n + \Phi k \partial_t u_m^n + \frac{(\Phi k)^2}{2} \partial_t^2 u_m^n + \frac{(\Phi k)^3}{6} \partial_t^3 u_m^n + \mathcal{O}(k^4) \right]                                                                                                                     \\
+                       & + \left[ u_m^n + \left(\Phi k \partial_t u_m^n - h \partial_x u_m^n\right) + \frac{1}{2}\left(\Phi^2 k^2 \partial_t^2 u_m^n + h^2 \partial_x^2 u_m^n\right) + \frac{1}{6}\left(\Phi^3 k^3 \partial_t^3 u_m^n - h^3 \partial_x^3 u_m^n\right) + \mathcal{O}(h^4 + k^4) \right] \\
+                       & = h^2 \partial_x^2 u_m^n + \mathcal{O}(h^4 + k^4)                                                                                                                                                                                                                             \\
 \end{align*}
+
+Then we substitute these expansions into the Crank-Nicolson scheme to analyze the local truncation error (LTE):
+\begin{align*}
+  U_m^\star & = U_m^n + \frac{r}{2} \left( \delta_x^2 U_m^\star + \delta_x^2 U_m^n \right) + k a U_m^n                                  \\
+            & = u_m^n + \frac{r}{2} \left( h^2 \partial_x^2 u_m^n + h^2 \partial_x^2 u_m^n \right) + k a u_m^n + \mathcal{O}(h^4 + k^4) \\
+            & = u_m^n + r h^2 \partial_x^2 u_m^n + k a u_m^n + \mathcal{O}(h^4 + k^4)                                                   \\
+\end{align*}
+
+By substituting the expansions into the Crank-Nicolson scheme, we can analyze the local truncation error (LTE) of the scheme.
+
+\begin{align*}
+  U_m^{n+1} &= U_m^\star + \tfrac{k}{2} \Bigl( a\,U_m^\star - a\,U_m^n \Bigr) \\[1mm]
+    &= \Bigl[ u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4) \Bigr] \\
+    &\quad {}+ \tfrac{k\,a}{2}\Bigl\{ \Bigl[ u_m^n + r\,h^2\,\partial_{xx} u_m^n + k\,a\,u_m^n 
+           + \mathcal{O}(h^4+k^2) \Bigr] - u_m^n \Bigr\} \\[1mm]
+    &= u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n 
+           + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4) + \tfrac{k\,a}{2}\Bigl( r\,h^2\,\partial_{xx} u_m^n + k\,a\,u_m^n \Bigr) + \mathcal{O}(h^4+k^4) \\[1mm]
+    &= u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n 
+           + \tfrac{k^3}{6}\,\partial_t^3 u_m^n 
+           + \tfrac{a\,r\,k}{2}\,h^2\,\partial_{xx} u_m^n + \tfrac{a^2\,k^2}{2}\,u_m^n
+           + \mathcal{O}(k^4+h^4)
+\end{align*}
+Using \(r=\frac{\mu k}{h^2}\) so that \(r\,h^2=\mu k\), we rewrite the above as
+\begin{align*}
+  U_m^{n+1} &= u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n 
+           + \tfrac{k^3}{6}\,\partial_t^3 u_m^n 
+           + \tfrac{a\,\mu\,k^2}{2}\,\partial_{xx} u_m^n + \tfrac{a^2\,k^2}{2}\,u_m^n
+           + \mathcal{O}(k^4+h^4).
+\end{align*}
+
+The left-hand side of the scheme is the exact solution at the next time level:
+\begin{align*}
+  u_m^{n+1} 
+    &= u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n 
+           + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4).
+\end{align*}
+
+The local truncation error (LTE) is the difference between the exact solution and the numerical approximation:
+
+\begin{align*}
+  U_m^{n+1} - u_m^{n+1}  &= 
+  \left[ u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4) \right] \\
+  &- \left[ u_m^n + k\,\mu\,\partial_{x}^2 u_m^n + k\,a\,u_m^n + \tfrac{a\,\mu\,k^2}{2}\,\partial_{x}^2 u_m^n + \tfrac{a^2\,k^2}{2}\,u_m^n \right] + \mathcal{O}(k^4+h^4) \\
+  &= k^2 \left[\tfrac{1}{2}\partial_t^2 u_m^n - \tfrac{a \,\mu}{2}\partial_{x}^2 u_m^n - \tfrac{a^2}{2}u_m^n\right] + \tfrac{k^3}{6}\partial_t^3 u_m^n + \mathcal{O}(k^4+h^4) \\
+  &= \mathcal{O}(k^2 + h^4)\\[2mm]
+  \norm{\tau_m^n} &= \norm{\frac{U_m^{n+1} - u_m^{n+1}}{k}} = \mathcal{O}(k + \frac{h^4}{k})\\
+\end{align*}
+
+If we choose time step \(k\) such that \(k \sim h^2\) is of similar order as the spatial step, then the LTE is a second-order error in both time and space:
+
+\begin{equation}
+  \norm{\tau_m^n} = \mathcal{O}(k + \frac{h^4}{k}) \approx \mathcal{O}(k^2 + h^2) \quad \text{where} \quad k \sim h^2
+\end{equation}
+
+
+
+
+\subsection{Von Neumann Stability Analysis}
+The Von Neumann stability analysis is a method to determine the stability of a numerical scheme by analyzing the growth of errors in the solution.
+
+For the Crank-Nicolson scheme, we substitute the Fourier modes into the scheme and analyze the amplification factor \(G\), which determines the stability of the scheme.
+\[
+  U_m^n = \xi^n e^{i \beta m h}
+\]
