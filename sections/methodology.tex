@@ -341,43 +341,71 @@ The Von Neumann stability analysis is a method to determine the stability of a f
     \xi^\star e^{i m \beta} & = \xi^n e^{i m \beta} + \frac{r}{2} \left(\xi^\star + \xi^n\right)\left(e^{i\beta} - 2 + e^{-i\beta}\right)e^{im\beta}+ k a \xi^n e^{i m \beta} \\
     \xi^\star               & = \xi^n + \frac{r}{2} \left(\xi^\star + \xi^n \right)\overbrace{\left(e^{i \beta} - 2 + e^{-i \beta}\right)}^{2\cos\beta - 2} + k a \xi^n       \\
     \xi^\star               & = (1 + r(\cos\beta - 1) + ka) \xi^n + r(\cos\beta - 1)\xi^\star                                                                                 \\
-    \xi^\star               & = \frac{1 + ka + r(\cos\beta - 1)}{1 - r(\cos\beta - 1)} \xi^n                                                                                  \\
+    \xi^\star               & = \frac{1 + \alpha + \sigma}{1 - \sigma} \xi^n                                                                                                  \\
   \end{align*}
 
- Substituting \(\sigma = r(\cos\beta - 1)\) and \(\alpha = ka\) for simplicity, the amplification factor between each step becomes
+  Substituting \(\sigma = r(\cos\beta - 1)\) and \(\alpha = ka\) for simplicity, the amplification factor between each step becomes
 
   \begin{align*}
     U_m^{n+1}               & =
     U_m^\star
-    + \frac{ka}{2}(U_m^\star - U_m^n) \\
+    + \frac{ka}{2}(U_m^\star - U_m^n)                     \\
     \xi^{n+1} e^{i m \beta} & =
     \xi^\star e^{i m \beta}
-    + \frac{ka}{2}(\xi^\star
-    - \xi^n)e^{i m \beta}                \\
+    + \frac{\alpha}{2}(\xi^\star
+    - \xi^n)e^{i m \beta}                                 \\
     \xi^{n+1}               & =
-    (1 + \frac{ka}{2}) \xi^\star
-    - \frac{ka}{2} \xi^n                 \\
+    (1 + \frac{\alpha}{2}) \xi^\star
+    - \frac{\alpha}{2} \xi^n                              \\
     \xi^{n+1}               & =
-    \left(1 + \frac{ka}{2}\right)
-    \left(\frac{1 + ka + r(\cos\beta - 1)}{1 - r(\cos\beta - 1)}\right)\xi^n
-    - \frac{ka}{2} \xi^n                 \\
-    \frac{\xi^{n+1}}{\xi^n} & =
-    -\frac{a^2k^2 + 2(a k + 1) (r (\cos\beta - 1) + 1)}
-    {2 (r (\cos\beta - 1) - 1)} \tag{Source: Trust me bro}           \\
+    \left(1 + \frac{\alpha}{2}\right)
+    \left(\frac{1 + \alpha + \sigma}{1 - \sigma}\right)\xi^n
+    - \frac{\alpha}{2} \xi^n                              \\
+    \xi                     & = \frac{\xi^{n+1}}{\xi^n} =
+    -\frac{\alpha^2 + 2(\alpha + 1) (\sigma + 1)}
+    {2 (\sigma - 1)} \tag{Source: Trust me bro}           \\
   \end{align*}
-
- 
-  \[
-    \xi = -\frac{\alpha^2 + 2(\alpha + 1)(\sigma + 1)}{2(\sigma - 1)}
-  \]
 
   Furthermore, we can now find a bound for the amplification factor:
 
   \begin{align*}
-    \norm*{\xi}                                                         & \leq 1 + Ck                                                                                                                                                       \\
-    \norm*{-\frac{\alpha^2 + 2(\alpha + 1)(\sigma + 1)}{2(\sigma - 1)}} & = \norm*{\frac{\alpha^2 + 2(\alpha + 1)(\sigma + 1)}{2(\sigma - 1)}}                                                                                              \\
-                                                                        & \leq \norm*{\frac{\alpha^2}{2(\sigma - 1)}} + \norm*{\frac{(\alpha + 1)(\sigma + 1)}{2(\sigma - 1)}}                                                              \\
-                                                                        & \leq \frac{\alpha^2}{2\underbrace{\abs{\sigma - 1}}_{\geq 1}} + \frac{(\alpha + 1)\overbrace{\abs{\sigma + 1}}^{\leq 1}}{2\underbrace{\abs{\sigma - 1}}_{\geq 1}} \\
+     \norm*{\xi} &= \norm*{
+      -\frac{\alpha^2 + 2(\alpha + 1)(\sigma + 1)}
+      {2(\sigma - 1)}}
+    \leq
+    \frac{
+      \alpha^2}
+    {
+      2\underbrace{
+        \abs{\sigma - 1}
+      }_{
+        \geq 1
+      }
+    }
+    + \frac{
+      (\alpha + 1)
+      \overbrace{
+        \abs{\sigma + 1}
+      }^{
+        \leq 1
+      }
+    }
+    {2\underbrace{\abs{\sigma - 1}}_{\geq 1}} 
+    \leq
+    \frac{
+      \alpha^2
+      + \alpha + 1
+      }{2}
+    \leq 1 \\                                 
+    \frac{\alpha^2 + \alpha - 1}{2}
+    &\leq 0
+    \Rightarrow
+    \alpha_{1,2}
+    =
+    \frac{-1 \pm \sqrt{5}}{2}
+    \approx -1.618, \. 0.618
+    \Rightarrow
+    \alpha \leq 0.618
   \end{align*}
 \end{proof}
 
