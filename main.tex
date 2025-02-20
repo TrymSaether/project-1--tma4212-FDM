@@ -1,6 +1,7 @@
 % !TeX root = main.tex
 \documentclass[a4paper,10pt]{report}
 \usepackage{refs/trymtex}
+\usepackage[backend=biber]{biblatex}
 
 \title{Numerical Solution of Differential Equations - Project 1}
 \author[1]{Sæther, Trym}
@@ -28,8 +29,7 @@ This report presents the numerical solution of a time-dependent problem using fi
 \include{sections/conclusion}
 
 
-\bibliographystyle{plain}
-\bibliography{refs/references}
+\printbibliography
 
 \appendix
 \section{Appendix: Python Code}

@@ -18,11 +18,11 @@ which written out becomes
 
 where $r = \frac{\mu k}{h^2}$. We now propose the following modification of the Crank-Nicolson scheme:
 \begin{equation}
-    U_m^* = U_m^n + r \left( \frac{1}{2} \delta_x^2 U_m^* + \frac{1}{2} \delta_x^2 U_m^n \right) + k f(U_m^n),
+    U_m^\star = U_m^n + r \left( \frac{1}{2} \delta_x^2 U_m^\star + \frac{1}{2} \delta_x^2 U_m^n \right) + k f(U_m^n),
 \end{equation}
 
 \begin{equation}
-    U_m^{n+1} = U_m^* + \frac{k}{2} \left( f(U_m^*) - f(U_m^n) \right).
+    U_m^{n+1} = U_m^\star + \frac{k}{2} \left( f(U_m^\star) - f(U_m^n) \right).
 \end{equation}
 
 For pure diffusion ($f = 0$), this is nothing but the usual Crank-Nicolson scheme, and for a pure reaction equation ($\mu = 0$), it is nothing but a second-order explicit Runge-Kutta method.

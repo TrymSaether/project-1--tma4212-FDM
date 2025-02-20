@@ -112,7 +112,128 @@ The Crank-Nicolson scheme is an implicit method that approximates the spatial de
 \end{align*}
 
 \section{Error Analysis}
-Let \(f(u) = a u\), where \(a\) is a constant.
+Given the function \(f(u) = au\) for constant \(a\), we first want to analyze the consistency of the Crank-Nicolson scheme by determining the local truncation error (LTE).
+
+\subsection{Consistency analysis (Local Truncation Error)}
+The local truncation error (LTE) is the error at a single grid point when approximating a differential equation with a finite difference scheme.
+It is the difference between the exact solution \(u(x_m, t_n)\) and the numerical approximation \(U_m^n\).
+
+\begin{theorem}{Local truncation error for Crank-Nicolson}{thm:lte_cn}
+  Consider the heat equation with linear reaction term \(f(u) = au\) for constant \(a\), discretized using the Crank-Nicolson scheme. Let \(u_m^n = u(x_m,t_n)\) denote the exact solution at grid points and \(u_m^\star = u(x_m, t_n + \Phi k)\) for \(\Phi \in [0,1]\) be an intermediate solution.
+
+  The local truncation error \(\tau_m^n = \norm{u(x_m, t_n) - U_m^n}\) satisfies
+  \[
+    \norm{\tau_m^n} = \mathcal{O}(k + \tfrac{h^4}{k})
+  \]
+  When choosing the time step \(k \sim h^2\), the scheme achieves second-order accuracy in both time and space:
+  \[
+    \norm{\tau_m^n} = \mathcal{O}(h^2 + k^2)
+  \]
+\end{theorem}
+\begin{proof}[Proof of Theorem~\ref{thm:lte_cn}]
+
+  Denote
+  \[
+    u_m^n = u(x_m, t_n),
+    \;
+    u_m^\star = u\bigl(x_m,\, t_n + \Phi k\bigr), \quad \Phi \in [0, 1] \tag{Exact and intermediate solutions}
+  \]
+
+  We will use Taylor expansions around $(x_m, t_n)$ in both space and time~\ref{eq:taylor}.
+
+  From central differences, we have
+  \[
+    \delta_x^2 u_m^n
+    \;=\; u_{m+1}^n \;-\; 2\,u_m^n \;+\; u_{m-1}^n
+    \;=\; h^2\,\partial_{xx}u_m^n \;+\; \mathcal{O}\bigl(h^4\bigr).
+  \]
+  Since $u_m^\star = u\bigl(x_m,\ t_n+\Phi k\bigr)$, similar Taylor expansions yield
+  \[
+    \delta_x^2 u_m^\star
+    \;=\; u_{m+1}^\star \;-\; 2\,u_m^\star \;+\; u_{m-1}^\star
+    \;=\; h^2\,\partial_{xx}u_m^n \;+\; \mathcal{O}\bigl(h^4 + k^4\bigr).
+  \]
+
+  Substitute these into the Crank--Nicolson half-step:
+  \[
+    U_m^\star
+    \;=\; U_m^n
+    \;+\; \frac{r}{2}\bigl(\delta_x^2 U_m^\star + \delta_x^2 U_m^n\bigr)
+    \;+\; k\,a\,U_m^n,
+    \quad
+    r \;=\; \frac{\mu\,k}{h^2}.
+  \]
+  Matching $U_m^\star$ with the exact solution plus higher-order terms, we get
+  \[
+    U_m^\star
+    \;=\; u_m^n
+    \;+\; r\,h^2\,\partial_{xx}u_m^n
+    \;+\; k\,a\,u_m^n
+    \;+\; \mathcal{O}\bigl(h^4 + k^4\bigr).
+  \]
+
+  Next, we compute the full step using the intermediate solution:
+
+  \[
+    U_m^{n+1}
+    \;=\; U_m^\star
+    \;+\; \tfrac{k}{2}\,\bigl(a\,U_m^\star - a\,U_m^n\bigr).
+  \]
+  Expand $U_m^\star$ in time around $(x_m,t_n)$ and collect terms carefully:
+  \[
+    U_m^{n+1}
+    \;=\; u_m^n
+    \;+\; k\,\partial_t u_m^n
+    \;+\; \tfrac{k^2}{2}\,\partial_t^2 u_m^n
+    \;+\; \tfrac{k^3}{6}\,\partial_t^3 u_m^n
+    \;+\; \tfrac{a\,r\,k}{2}\,h^2\,\partial_{xx} u_m^n
+    \;+\; \tfrac{a^2\,k^2}{2}\,u_m^n
+    \;+\; \mathcal{O}\bigl(k^4 + h^4\bigr).
+  \]
+
+  Since $r\,h^2 = \mu\,k$, the term involving $\partial_{xx} u_m^n$ can be written as
+  $\tfrac{a\,\mu\,k^2}{2}\,\partial_{xx}u_m^n$.
+
+  Compare to the exact solution at the next time level:
+
+  \[
+    u_m^{n+1}
+    \;=\; u_m^n
+    \;+\; k\,\partial_t u_m^n
+    \;+\; \tfrac{k^2}{2}\,\partial_t^2 u_m^n
+    \;+\; \tfrac{k^3}{6}\,\partial_t^3 u_m^n
+    \;+\; \mathcal{O}\bigl(k^4\bigr).
+  \]
+
+  Their difference is
+  \[
+    U_m^{n+1} \;-\; u_m^{n+1}
+    \;=\;
+    \underbrace{\bigl(\tfrac{a\,\mu\,k^2}{2}\,\partial_{xx}u_m^n
+      + \tfrac{a^2\,k^2}{2}\,u_m^n\bigr)}_{\mathcal{O}(k^2)}
+    \;+\; \mathcal{O}\bigl(k^3 + h^4\bigr)
+    \;=\; \mathcal{O}\bigl(k^2 + h^4\bigr).
+  \]
+  Thus, the local truncation error (per time step) is
+  \[
+    \lVert{\tau_m^n}\rVert
+    \;=\; \left\lVert\dfrac{1}{k}\left(U_m^{n+1} - u_m^{n+1}\right) \right\rVert
+    \;=\; \mathcal{O}\bigl(k + \tfrac{h^4}{k}\bigr).
+  \]
+  If we choose $k \sim h^2$, then
+  \[
+    \frac{h^4}{k} \;\sim\; h^2,
+    \quad
+    \Rightarrow
+    \quad
+    \lVert{\tau_m^n}\rVert \;\approx\; \mathcal{O}\bigl(k^2 + h^2\bigr).
+  \]
+  Therefore, under the usual choice $k \propto h^2$, the scheme is second-order accurate in both time and space.
+
+\end{proof}
+
+
+
 
 We denote the exact, and intermediate PDE solution by
 \[
@@ -125,26 +246,6 @@ We want to find the local truncation error (LTE) of the Crank-Nicolson scheme, w
 \[
   \norm{\tau_m^n} = \norm{u(x_m, t_n) - U_m^n} = \mathcal{O}(h^p + k^q) \quad \text{as} \quad h, k \to 0
 \]
-
-
-\paragraph{Spatial Taylor Expansions}
-\begin{align*}
-  u_{m+1}^n & \approx u_m^n + h \partial_x u_m^n + \frac{h^2}{2} \partial_x^2 u_m^n + \frac{h^3}{6} \partial_x^3 u_m^n + \mathcal{O}(h^4) \\
-  u_{m-1}^n & \approx u_m^n - h \partial_x u_m^n + \frac{h^2}{2} \partial_x^2 u_m^n - \frac{h^3}{6} \partial_x^3 u_m^n + \mathcal{O}(h^4) \\
-\end{align*}
-
-\paragraph{Temporal Taylor Expansions}
-\begin{align*}
-  u_m^{n+1} & \approx u_m^n + k \partial_t u_m^n + \frac{k^2}{2} \partial_t^2 u_m^n + \frac{k^3}{6} \partial_t^3 u_m^n + \mathcal{O}(k^4)                                                                                                            \\
-  u_m^\star & \approx u_m^n + \Phi k \partial_t u_m^n + \frac{(\Phi k)^2}{2} \partial_t^2 u_m^n + \frac{(\Phi k)^3}{6} \partial_t^3 u_m^n + \mathcal{O}(k^4)                                                                                         \\
-            & = u_m^n + \Phi k \left(\mu \partial_x^2 u_m^n + a u_m^n\right) + \frac{(\Phi k)^2}{2} \left(\mu \partial_x^2 \left(\mu \partial_x^2 u_m^n + a u_m^n\right) + a \left(\mu \partial_x^2 u_m^n + a u_m^n\right)\right) + \mathcal{O}(k^4) \\
-\end{align*}
-
-\paragraph{Spatial and Temporal Expansion}
-\begin{align*}
-  u_{m+1}^\star & \approx u_m^n + \left(\Phi k \partial_t u_m^n + h \partial_x u_m^n\right) + \frac{1}{2}\left(\Phi^2 k^2 \partial_t^2 u_m^n + h^2 \partial_x^2 u_m^n\right) + \mathcal{O}(h^3 + k^3) \\
-  u_{m-1}^\star & \approx u_m^n + \left(\Phi k \partial_t u_m^n - h \partial_x u_m^n\right) + \frac{1}{2}\left(\Phi^2 k^2 \partial_t^2 u_m^n + h^2 \partial_x^2 u_m^n\right) + \mathcal{O}(h^3 + k^3) \\
-\end{align*}
 
 Then we substitute these expansions into the finite difference schemes to analyze the local truncation error (LTE):
 
@@ -174,41 +275,42 @@ Then we substitute these expansions into the Crank-Nicolson scheme to analyze th
 By substituting the expansions into the Crank-Nicolson scheme, we can analyze the local truncation error (LTE) of the scheme.
 
 \begin{align*}
-  U_m^{n+1} &= U_m^\star + \tfrac{k}{2} \Bigl( a\,U_m^\star - a\,U_m^n \Bigr) \\[1mm]
-    &= \Bigl[ u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4) \Bigr] \\
-    &\quad {}+ \tfrac{k\,a}{2}\Bigl\{ \Bigl[ u_m^n + r\,h^2\,\partial_{xx} u_m^n + k\,a\,u_m^n 
-           + \mathcal{O}(h^4+k^2) \Bigr] - u_m^n \Bigr\} \\[1mm]
-    &= u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n 
-           + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4) + \tfrac{k\,a}{2}\Bigl( r\,h^2\,\partial_{xx} u_m^n + k\,a\,u_m^n \Bigr) + \mathcal{O}(h^4+k^4) \\[1mm]
-    &= u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n 
-           + \tfrac{k^3}{6}\,\partial_t^3 u_m^n 
-           + \tfrac{a\,r\,k}{2}\,h^2\,\partial_{xx} u_m^n + \tfrac{a^2\,k^2}{2}\,u_m^n
-           + \mathcal{O}(k^4+h^4)
+  U_m^{n+1} & = U_m^\star + \tfrac{k}{2} \Bigl( a\,U_m^\star - a\,U_m^n \Bigr)                                                                            \\[1mm]
+            & = \Bigl[ u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4) \Bigr]    \\
+            & \quad {}+ \tfrac{k\,a}{2}\Bigl\{ \Bigl[ u_m^n + r\,h^2\,\partial_{xx} u_m^n + k\,a\,u_m^n
+  + \mathcal{O}(h^4+k^2) \Bigr] - u_m^n \Bigr\}                                                                                                           \\[1mm]
+            & = u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n
+  + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4) + \tfrac{k\,a}{2}\Bigl( r\,h^2\,\partial_{xx} u_m^n + k\,a\,u_m^n \Bigr) + \mathcal{O}(h^4+k^4) \\[1mm]
+            & = u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n
+  + \tfrac{k^3}{6}\,\partial_t^3 u_m^n
+  + \tfrac{a\,r\,k}{2}\,h^2\,\partial_{xx} u_m^n + \tfrac{a^2\,k^2}{2}\,u_m^n
+  + \mathcal{O}(k^4+h^4)
 \end{align*}
+
 Using \(r=\frac{\mu k}{h^2}\) so that \(r\,h^2=\mu k\), we rewrite the above as
 \begin{align*}
-  U_m^{n+1} &= u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n 
-           + \tfrac{k^3}{6}\,\partial_t^3 u_m^n 
-           + \tfrac{a\,\mu\,k^2}{2}\,\partial_{xx} u_m^n + \tfrac{a^2\,k^2}{2}\,u_m^n
-           + \mathcal{O}(k^4+h^4).
+  U_m^{n+1} & = u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n
+  + \tfrac{k^3}{6}\,\partial_t^3 u_m^n
+  + \tfrac{a\,\mu\,k^2}{2}\,\partial_{xx} u_m^n + \tfrac{a^2\,k^2}{2}\,u_m^n
+  + \mathcal{O}(k^4+h^4).
 \end{align*}
 
 The left-hand side of the scheme is the exact solution at the next time level:
 \begin{align*}
-  u_m^{n+1} 
-    &= u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n 
-           + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4).
+  u_m^{n+1}
+   & = u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n
+  + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4).
 \end{align*}
 
 The local truncation error (LTE) is the difference between the exact solution and the numerical approximation:
 
 \begin{align*}
-  U_m^{n+1} - u_m^{n+1}  &= 
-  \left[ u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4) \right] \\
-  &- \left[ u_m^n + k\,\mu\,\partial_{x}^2 u_m^n + k\,a\,u_m^n + \tfrac{a\,\mu\,k^2}{2}\,\partial_{x}^2 u_m^n + \tfrac{a^2\,k^2}{2}\,u_m^n \right] + \mathcal{O}(k^4+h^4) \\
-  &= k^2 \left[\tfrac{1}{2}\partial_t^2 u_m^n - \tfrac{a \,\mu}{2}\partial_{x}^2 u_m^n - \tfrac{a^2}{2}u_m^n\right] + \tfrac{k^3}{6}\partial_t^3 u_m^n + \mathcal{O}(k^4+h^4) \\
-  &= \mathcal{O}(k^2 + h^4)\\[2mm]
-  \norm{\tau_m^n} &= \norm{\frac{U_m^{n+1} - u_m^{n+1}}{k}} = \mathcal{O}(k + \frac{h^4}{k})\\
+  U_m^{n+1} - u_m^{n+1} & =
+  \left[ u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4) \right]                                                            \\
+                        & - \left[ u_m^n + k\,\mu\,\partial_{x}^2 u_m^n + k\,a\,u_m^n + \tfrac{a\,\mu\,k^2}{2}\,\partial_{x}^2 u_m^n + \tfrac{a^2\,k^2}{2}\,u_m^n \right] + \mathcal{O}(k^4+h^4)     \\
+                        & = k^2 \left[\tfrac{1}{2}\partial_t^2 u_m^n - \tfrac{a \,\mu}{2}\partial_{x}^2 u_m^n - \tfrac{a^2}{2}u_m^n\right] + \tfrac{k^3}{6}\partial_t^3 u_m^n + \mathcal{O}(k^4+h^4) \\
+                        & = \mathcal{O}(k^2 + h^4)                                                                                                                                                   \\[2mm]
+  \norm{\tau_m^n}       & = \norm{\frac{U_m^{n+1} - u_m^{n+1}}{k}} = \mathcal{O}(k + \frac{h^4}{k})                                                                                                  \\
 \end{align*}
 
 If we choose time step \(k\) such that \(k \sim h^2\) is of similar order as the spatial step, then the LTE is a second-order error in both time and space:
@@ -217,13 +319,54 @@ If we choose time step \(k\) such that \(k \sim h^2\) is of similar order as the
   \norm{\tau_m^n} = \mathcal{O}(k + \frac{h^4}{k}) \approx \mathcal{O}(k^2 + h^2) \quad \text{where} \quad k \sim h^2
 \end{equation}
 
+\subsection{Stability Analysis (Von Neumann Stability)}
+The Von Neumann stability analysis is a method to determine the stability of a finite difference scheme by analyzing the growth of errors in the Fourier modes of the solution.
+
+\begin{theorem}{Stability of the Crank-Nicolson scheme}{stability_cn}
+  The Crank-Nicolson scheme is stable for the heat equation with linear reaction term \(f(u) = au\) for constant \(a\) if the time step \(k\) satisfies the condition
+  \[
+    k \leq \frac{h^2}{2\mu} \quad \text{where} \quad r = \frac{\mu k}{h^2}
+  \]
+  and the amplification factor \(\xi\) satisfies
+  \[
+    \norm{\xi} \leq 1 + Ck
+  \]
+\end{theorem}
+\begin{proof}[Proof of Theorem~\ref{thm:stability_cn}]
+  Let \(U_m^n = \xi^n e^{i m \theta}\) be the Fourier mode of the numerical solution at grid point \((x_m, t_n)\), where \(\xi\) is the amplification factor and \(\theta\) is the wave number.
+  For the first step of the Crank-Nicolson scheme, we substitute the Fourier mode and the reaction term \(f(u) = au\):
+
+  \begin{align*}
+    U_m^\star                & = U_m^n + \frac{r}{2} (\delta_x^2 U_m^\star + \delta_x^2 U_m^n) + k a U_m^n                                                                          \\
+    \xi^\star e^{i m \theta} & = \xi^n e^{i m \theta} + \frac{r}{2} \left(\xi^\star + \xi^n\right)\left(e^{i\theta} - 2 + e^{-i\theta}\right)e^{im\theta}+ k a \xi^n e^{i m \theta} \\
+    \xi^\star                & = \xi^n + \frac{r}{2} \left(\xi^\star + \xi^n \right)\overbrace{\left(e^{i \theta} - 2 + e^{-i \theta}\right)}^{2\cos\theta - 2} + k a \xi^n                                       \\
+    \xi^\star                & = (1 + r(\cos(\theta) - 1) + ka) \xi^n + r(\cos(\theta) - 1)\xi^\star                                                                                \\
+    \xi^\star                & = \frac{(1 + ka) + r(\cos(\theta) - 1)}{1 - r(\cos(\theta) - 1)} \xi^n                                                                               \\
+  \end{align*}
+
+  For the second step, substitute the Fourier mode into the Crank-Nicolson scheme:
+
+  \begin{align*}
+    U_m^{n+1}                & = U_m^\star + \frac{k}{2}(a U_m^\star - a U_m^n)                                                                        \\
+    \xi^{n+1} e^{i m \theta} & = \xi^\star e^{i m \theta} + \frac{ka}{2}(\xi^\star - \xi^n)e^{i m \theta}                                              \\
+    \xi^{n+1}                & = (1 + \frac{ka}{2}) \xi^\star - \frac{ka}{2} \xi^n                                                                     \\
+    \frac{\xi^{n+1}}{\xi^n}  & = -\frac{{ak}^2 + 2(a k + 1) (r (\cos(\theta) - 1) + 1)}{2 (r (\cos(\theta) - 1) - 1)}       \tag{Source: Trust me bro} \\
+  \end{align*}
+
+  Let \(\beta = r(\cos(\theta) - 1)\) and \(\alpha = ka\), then we have the amplification factor \(\xi=\frac{\xi^{n+1}}{\xi^n}\):
+
+  \[
+    \xi = -\frac{\alpha^2 + 2(\alpha + 1)(\beta + 1)}{2(\beta - 1)}
+  \]
+
+  Furthermore, we can now find a bound for the amplification factor:
+
+  \begin{align*}
+    \norm*{\xi}                                                       & \leq 1 + Ck                                                                                                                                                    \\
+    \norm*{-\frac{\alpha^2 + 2(\alpha + 1)(\beta + 1)}{2(\beta - 1)}} & = \norm*{\frac{\alpha^2 + 2(\alpha + 1)(\beta + 1)}{2(\beta - 1)}}                                                                                             \\
+                                                                      & \leq \norm*{\frac{\alpha^2}{2(\beta - 1)}} + \norm*{\frac{(\alpha + 1)(\beta + 1)}{2(\beta - 1)}}                                                              \\
+                                                                      & \leq \frac{\alpha^2}{2\underbrace{\abs{\beta - 1}}_{\geq 1}} + \frac{(\alpha + 1)\overbrace{\abs{\beta + 1}}^{\leq 1}}{2\underbrace{\abs{\beta - 1}}_{\geq 1}} \\
+  \end{align*}
+\end{proof}
 
 
-
-\subsection{Von Neumann Stability Analysis}
-The Von Neumann stability analysis is a method to determine the stability of a numerical scheme by analyzing the growth of errors in the solution.
-
-For the Crank-Nicolson scheme, we substitute the Fourier modes into the scheme and analyze the amplification factor \(G\), which determines the stability of the scheme.
-\[
-  U_m^n = \xi^n e^{i \beta m h}
-\]
