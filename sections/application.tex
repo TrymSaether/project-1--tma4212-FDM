@@ -1,0 +1,16 @@
+\chapter{Application}
+
+\section{SIR Model}
+\begin{align}
+    \begin{cases}
+        S_t &= -\beta IS + \mu_S \Delta S \\
+        I_t &= \beta IS - \gamma I + \mu_I \Delta I
+    \end{cases}
+    \quad \Rightarrow
+    \begin{cases}
+        \frac{\partial S}{\partial t} &= -IS + \frac{\partial^2 S}{\partial x^2} \\
+        \frac{\partial I}{\partial t} &= IS - \lambda I + \frac{\partial^2 I}{\partial x^2}
+    \end{cases}
+\end{align}
+
+
