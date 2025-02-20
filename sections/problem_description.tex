@@ -2,72 +2,66 @@
 
 In this project, we will study reaction-diffusion equations. Such equations are given by
 \begin{equation}
-    u_t = \mu u_{xx} + f(u),
+  u_t = \mu u_{xx} + f(u),
 \end{equation}
 where $\mu$ is some positive constant. We will assume the reaction term $f(u)$ to be nonstiff, in the sense that explicit methods can be used to solve the ODE $u_t = f(u)$. As is well known, time-dependent PDEs with diffusion terms should be solved by implicit methods. Using implicit methods for solving the whole system requires solutions of nonlinear equations for each step, and we would all be happy to avoid that. One option would be to use an implicit method for the diffusion term and an explicit for the reaction.
 
 We will use constant step sizes $h$ in the $x$-direction, and $k$ in the $t$-direction, so that $x_{m+1} = x_m + h$ and $t_{n+1} = t_n + k$. A scheme based on forward and backward Euler, together with a central difference in space could be
-\begin{equation}
-    \frac{1}{k} \nabla_t U_m^{n+1} = \frac{\mu}{h^2} \delta_x^2 U_m^{n+1} + f(U_m^n),
-\end{equation}
+\begin{align*}
+  \frac{1}{k} \nabla_t U_m^{n+1} &= \frac{\mu}{h^2} \delta_x^2 U_m^{n+1} + f(U_m^n) \\
+  U_m^{n+1} &= U_m^n + r \left( U_{m+1}^{n+1} - 2 U_m^{n+1} + U_{m-1}^{n+1} \right) + k f(U_m^n), \quad r = \frac{\mu k}{h^2}.
+\end{align*}
 
-which written out becomes
-\begin{equation}
-    U_m^{n+1} = U_m^n + r \left( U_{m+1}^{n+1} - 2 U_m^{n+1} + U_{m-1}^{n+1} \right) + k f(U_m^n),
-\end{equation}
-
-where $r = \frac{\mu k}{h^2}$. We now propose the following modification of the Crank-Nicolson scheme:
-\begin{equation}
-    U_m^\star = U_m^n + r \left( \frac{1}{2} \delta_x^2 U_m^\star + \frac{1}{2} \delta_x^2 U_m^n \right) + k f(U_m^n),
-\end{equation}
-
-\begin{equation}
-    U_m^{n+1} = U_m^\star + \frac{k}{2} \left( f(U_m^\star) - f(U_m^n) \right).
-\end{equation}
+\begin{align*}
+  U_m^\star &= U_m^n + r \left( \frac{1}{2} \delta_x^2 U_m^\star + \frac{1}{2} \delta_x^2 U_m^n \right) + k f(U_m^n) \\
+  U_m^{n+1} &= U_m^\star + \frac{k}{2} \left( f(U_m^\star) - f(U_m^n) \right) \tag{Crank-Nicolson}
+\end{align*}
 
 For pure diffusion ($f = 0$), this is nothing but the usual Crank-Nicolson scheme, and for a pure reaction equation ($\mu = 0$), it is nothing but a second-order explicit Runge-Kutta method.
 
-\clearpage
-
 \begin{railingbox}{Theory problem}
-    Do a consistency/stability analysis of the proposed method (1) on a linear PDE, that is, let \(f(u) = au\) for some constant \(a\).
-    For the stability analysis, you can choose whether you do a complete matrix analysis for the PDE on a given domain (e.g. \(x \in (0, 1)\)) with boundary conditions, or a Neumann analysis. Is the method unconditionally stable? What can be said about the global error?
-    Formulate your results as a mathematical statements (lemmas or theorems) with proofs.
-    Justify your theoretical results by numerical experiments.
+  Do a consistency/stability analysis of the proposed method (1) on a linear PDE, that is, let \(f(u) = au\) for some constant \(a\).
+  For the stability analysis, you can choose whether you do a complete matrix analysis for the PDE on a given domain (e.g. \(x \in (0, 1)\)) with boundary conditions, or a Neumann analysis. Is the method unconditionally stable? What can be said about the global error?
+  Formulate your results as a mathematical statements (lemmas or theorems) with proofs.
+  Justify your theoretical results by numerical experiments.
 \end{railingbox}
 
-
+\clearpage 
 
 \begin{railingbox}{Application problem}
-    In this exercise, we will look at a model from epidemiology; how an infectious disease will develop in space and time.
-    At a given time \(t\), a population \(N\) can be divided into
-    \begin{itemize}
-        \item Susceptible \(S\): A person is susceptible if she/he may get the disease.
-        \item Infective and infectious \(I\): A person is infective if she/he has the disease and is able to transfer it to others.
-        \item Removed: \(R\) Part of the population that for some reason will never again be infected or infect others (immune, isolated from the population or dead).
-    \end{itemize}
-    The following model (SIR) is described in \cite{murray2002mathematical}, chapter 3, and describe the development of a disease over time:
-    \begin{align}
-        \frac{dS}{dt} & = -\beta SI, \nonumber \\
-        \frac{dI}{dt} & = \beta SI - \gamma I, \label{eq:sir_model} \\
-        \frac{dR}{dt} & = \gamma I. \nonumber
-    \end{align}
-    Notice that \(N(t) = S(t) + I(t) + R(t)\) is constant.
-    In the following, we will assume a scaled model, so \(S\), \(I\) and \(R\) are the fraction of the population that are susceptible, infected and removed respectively. In this case, \(S(t) + I(t) + R(t) = 1\).
-    The usual SIR model only describe how a disease may develop over time at one specific location, not how a disease is spread in space. Murray \cite{murray2002mathematical}, chapter 13, proposes the following modification to include spatial spread:
-    \begin{align}
-        S_t & = -\beta IS + \mu S \Delta S, \nonumber \\
-        I_t & = \beta IS - \gamma I + \mu I \Delta I, \label{eq:sir_model_space}
-    \end{align}
-    where \(\Delta u = u_{xx} + u_{yy}\) (see the appendix). Your exercise is now: Try to understand the
-    model. Choose an appropriate numerical scheme for solving the PDEs, and use this to study the spread of a disease. That is, at \(t = 0\) assume a small portion of the population is infected at some particular place, and see how the disease
-    will spread from there. You are free to choose the domain, the parameters and boundary conditions, but you should be able to get some interesting results out of it. And you should justify your choices.
-    As soon as you have a working model, play with it! As an example: In the present model, we assume that the population is equally distributed over the domain. You can for instance model a more dense populated area (or an event that gather a lot of people) by making \(\beta\) larger over there (and then dependent on \(x\)).
-    Some hints:
-    \begin{itemize}
-        \item To get a certain feeling for the dynamics of the model, solve \eqref{eq:sir_model} first. As a first try, you can use \(\beta = 3\) and \(\gamma = 1\), but then change the parameters and see what happens. Use a standard ODE solver if you prefer.
-        \item The diffusion parameters \(\mu^*\) describes how fast people are moving around. If your domain is small, you should probably use quite small diffusion parameters.
-        \item For a full score, the 2d problem should be solved. But if this seems difficult, solve the 1d problem first.
-    \end{itemize}
-\end{railingbox}
+  In this exercise, we will look at a model from epidemiology; how an infectious disease will develop in space and time.
+  At a given time \(t\), a population \(N\) can be divided into
+  \begin{itemize}
+    \item Susceptible \(S\): A person is susceptible if she/he may get the disease.
+    \item Infective and infectious \(I\): A person is infective if she/he has the disease and is able to transfer it to others.
+    \item Removed: \(R\) Part of the population that for some reason will never again be infected or infect others (immune, isolated from the population or dead).
+  \end{itemize}
 
+  The following model (SIR) is described in \cite{murray2002mathematical}, chapter 3, and describe the development of a disease over time:
+  
+  \begin{equation}
+    \frac{dS}{dt}  = -\beta SI, \quad \frac{dI}{dt}  = \beta SI - \gamma I, \quad \frac{dR}{dt}  = \gamma I \label{eq:sir_model} 
+  \end{equation}
+
+  Notice that \(N(t) = S(t) + I(t) + R(t)\) is constant.
+  
+  In the following, we will assume a scaled model, so \(S\), \(I\) and \(R\) are the fraction of the population that are susceptible, infected and removed respectively. In this case, \(S(t) + I(t) + R(t) = 1\).
+  The usual SIR model only describe how a disease may develop over time at one specific location, not how a disease is spread in space. Murray \cite{murray2002mathematical}, chapter 13, proposes the following modification to include spatial spread:
+  
+  \begin{align}
+    S_t  = -\beta IS + \mu S \Delta S, \quad I_t = \beta IS - \gamma I + \mu I \Delta I \label{eq:sir_model_space}
+  \end{align}
+
+  where \(\Delta u = u_{xx} + u_{yy}\) (see the appendix). Your exercise is now: Try to understand the model. 
+  Choose an appropriate numerical scheme for solving the PDEs, and use this to study the spread of a disease. 
+  That is, at \(t = 0\) assume a small portion of the population is infected at some particular place, and see how the disease will spread from there. 
+  You are free to choose the domain, the parameters and boundary conditions, but you should be able to get some interesting results out of it. 
+  And you should justify your choices. As soon as you have a working model, play with it! 
+  As an example: In the present model, we assume that the population is equally distributed over the domain. 
+  You can for instance model a more dense populated area (or an event that gather a lot of people) by making \(\beta\) larger over there (and then dependent on \(x\)).
+  \begin{itemize}
+    \item To get a certain feeling for the dynamics of the model, solve \eqref{eq:sir_model} first. As a first try, you can use \(\beta = 3\) and \(\gamma = 1\), but then change the parameters and see what happens. Use a standard ODE solver if you prefer.
+    \item The diffusion parameters \(\mu^*\) describes how fast people are moving around. If your domain is small, you should probably use quite small diffusion parameters.
+    \item For a full score, the 2d problem should be solved. But if this seems difficult, solve the 1d problem first.
+  \end{itemize}
+\end{railingbox}
