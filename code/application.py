@@ -65,7 +65,7 @@ def simulate_sir_diffusion_2d_fast(
     Nsteps = int(T / dt)
 
     L = build_laplacian_2d_neumann_like(Mx, My, dx, dy)
-
+    
     def idx(i, j):
         return i * (My + 1) + j
 
@@ -129,12 +129,12 @@ def simulate_sir_diffusion_2d_fast(
     return S_list, I_list, times, (Mx, My)
 
 
-Mx = 50
-My = 50
-dt = 0.0002
+Mx = 5
+My = 5
+dt = 0.01
 T = 30
 beta = 3.0
-gamma = 0.5
+gamma = 1
 muS = 0.01
 muI = 0.01
 
