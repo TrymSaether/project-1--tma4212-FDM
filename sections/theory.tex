@@ -5,7 +5,7 @@
 \begin{definition}{Local Truncation Error}{lte}
   The local truncation error (LTE) is the error made at a single grid point when approximating a differential equation with a finite difference scheme.
   \[
-    \norm{\tau_m^n} = \norm{u(x_m, t_n) - U_m^n} = \mathcal{O}(h^p + k^q) \quad \text{as} \quad h, k \to 0 
+    \norm{\tau_m^n} = \norm{u(x_m, t_n) - U_m^n} = \mathcal{O}(h^p + k^q) \quad \text{as} \quad h, k \to 0
   \]
   where \(p\) and \(q\) are the order of the spatial and temporal discretizations, respectively.
 \end{definition}
@@ -171,6 +171,8 @@ The Crank-Nicolson scheme is an implicit method that approximates the spatial de
   U_m^{n+1} & = U_m^\star + \frac{k}{2} \left( f(U_m^\star) - f(U_m^n) \right) \tag{Crank-Nicolson}
 \end{align*}
 
+
+
 \section{Error Analysis}
 Given the function \(f(u) = au\) for constant \(a\), we first want to analyze the consistency of the Crank-Nicolson scheme by determining the local truncation error (LTE).
 
@@ -288,102 +290,42 @@ It is the difference between the exact solution \(u(x_m, t_n)\) and the numerica
     \quad
     \lVert{\tau_m^n}\rVert \;\approx\; \mathcal{O}\bigl(k^2 + h^2\bigr).
   \]
-  Therefore, under the usual choice $k \propto h^2$, the scheme is second-order accurate in both time and space.
-
+  Therefore, under the usual choice $k \propto h^2$, the scheme is second-order accurate in both time and space. \qed
 \end{proof}
 
 \subsection{Stability Analysis (Von Neumann Stability)}
 The Von Neumann stability analysis is a method to determine the stability of a finite difference scheme by analyzing the growth of errors in the Fourier modes of the solution.
-
 \begin{theorem}{Stability of the Crank-Nicolson scheme}{stability_cn}
-  The Crank-Nicolson scheme is stable for the heat equation with linear reaction term \(f(u) = au\) for constant \(a\) if the time step \(k\) satisfies the condition
+  The Crank-Nicolson scheme is stable for the heat equation with linear reaction term \(f(u) = au\) if:
   \[
-    k \leq \frac{h^2}{2\mu} \quad \text{where} \quad r = \frac{\mu k}{h^2}
+    ka \leq 0.618 \quad \text{and} \quad \frac{\mu k}{h^2}(\cos\beta - 1) \leq 0
   \]
-  and the amplification factor \(\xi\) satisfies
-  \[
-    \norm{\xi} \leq 1 + Ck
-  \]
+  Under these conditions, the amplification factor satisfies \(\norm{\xi} \leq 1\).
 \end{theorem}
 \begin{proof}[Proof of Theorem~\ref{thm:stability_cn}]
-  Let \(U_m^n = \xi^n e^{i m \beta}\) be the Fourier mode of the numerical solution at grid point \((x_m, t_n)\), where \(\xi=\frac{\xi^{n+1}}{\xi^n}\) is the amplification factor and \(\beta\) is the wave number.
-  For the first step of the Crank-Nicolson scheme, we substitute the Fourier mode and the reaction term \(f(u) = au\):
-
+  Let \(U_m^n = \xi^n e^{i m \beta}\) be the Fourier mode of the numerical solution at grid point \((x_m, t_n)\), where \(\xi=\dfrac{\xi^{n+1}}{\xi^n}\) is the amplification factor and \(\beta\) is the wave number.
+  For the first step of the Crank-Nicolson scheme, we have:
   \begin{align*}
-    U_m^\star               & = U_m^n + \frac{r}{2} (\delta_x^2 U_m^\star + \delta_x^2 U_m^n) + k a U_m^n                                                                     \\
-    \xi^\star e^{i m \beta} & = \xi^n e^{i m \beta} + \frac{r}{2} \left(\xi^\star + \xi^n\right)\left(e^{i\beta} - 2 + e^{-i\beta}\right)e^{im\beta}+ k a \xi^n e^{i m \beta} \\
-    \xi^\star               & = \xi^n + \frac{r}{2} \left(\xi^\star + \xi^n \right)\overbrace{\left(e^{i \beta} - 2 + e^{-i \beta}\right)}^{2\cos\beta - 2} + k a \xi^n       \\
-    \xi^\star               & = (1 + r(\cos\beta - 1) + ka) \xi^n + r(\cos\beta - 1)\xi^\star                                                                                 \\
-    \xi^\star               & = \frac{1 + \alpha + \sigma}{1 - \sigma} \xi^n                                                                                                  \\
+    U_m^\star               & = U_m^n + \dfrac{r}{2} (\delta_x^2 U_m^\star + \delta_x^2 U_m^n) + k a U_m^n                                                                     \\
+    \xi^\star e^{i m \beta} & = \xi^n e^{i m \beta} + \dfrac{r}{2} \left(\xi^\star + \xi^n\right)\left(e^{i\beta} - 2 + e^{-i\beta}\right)e^{im\beta}+ k a \xi^n e^{i m \beta} \\
+    \xi^\star               & = \xi^n + \dfrac{r}{2} \left(\xi^\star + \xi^n \right)\overbrace{\left(e^{i \beta} - 2 + e^{-i \beta}\right)}^{2\cos\beta - 2} + k a \xi^n       \\
+    \xi^\star               & = (1 + r(\cos\beta - 1) + ka) \xi^n + r(\cos\beta - 1)\xi^\star                                                                                  \\
+    \xi^\star               & = \dfrac{1 + \alpha + \sigma}{1 - \sigma} \xi^n \quad \text{where } \alpha = ka, \sigma = r(\cos\beta - 1)
   \end{align*}
-
-  Substituting \(\sigma = r(\cos\beta - 1)\) and \(\alpha = ka\) for simplicity, the amplification factor between each step becomes
-
+  Then, for the second step, we get:
   \begin{align*}
-    U_m^{n+1}               & =
-    U_m^\star
-    + \frac{ka}{2}(U_m^\star - U_m^n)                     \\
-    \xi^{n+1} e^{i m \beta} & =
-    \xi^\star e^{i m \beta}
-    + \frac{\alpha}{2}(\xi^\star
-    - \xi^n)e^{i m \beta}                                 \\
-    \xi^{n+1}               & =
-    (1 + \frac{\alpha}{2}) \xi^\star
-    - \frac{\alpha}{2} \xi^n                              \\
-    \xi^{n+1}               & =
-    \left(1 + \frac{\alpha}{2}\right)
-    \left(\frac{1 + \alpha + \sigma}{1 - \sigma}\right)\xi^n
-    - \frac{\alpha}{2} \xi^n                              \\
-    \xi                     & = \frac{\xi^{n+1}}{\xi^n} =
-    -\frac{\alpha^2 + 2(\alpha + 1) (\sigma + 1)}
-    {2 (\sigma - 1)} \tag{Source: Trust me bro}           \\
+    U_m^{n+1}               & = U_m^\star + \tfrac{\alpha}{2}(U_m^\star - U_m^n)                                                                      \\
+    \xi^{n+1} e^{i m \beta} & = \xi^\star e^{i m \beta} + \tfrac{\alpha}{2}(\xi^\star - \xi^n)e^{i m \beta}                                           \\
+    \xi^{n+1}               & = (1 + \tfrac{\alpha}{2}) \xi^\star - \tfrac{\alpha}{2} \xi^n                                                           \\
+    \xi^{n+1}               & = \left(1 + \tfrac{\alpha}{2}\right)\left(\tfrac{1 + \alpha + \sigma}{1 - \sigma}\right)\xi^n - \tfrac{\alpha}{2} \xi^n \\
+    \xi                     & = \tfrac{\xi^{n+1}}{\xi^n} = -\dfrac{\alpha^2 + 2(\alpha + 1) (\sigma + 1)}{2 (\sigma - 1)} \tag{Source: Trust me bro}
   \end{align*}
-
   Furthermore, we can now find a bound for the amplification factor:
-
   \begin{align*}
-    \norm*{\xi} & = \norm*{
-      -\frac{\alpha^2 + 2(\alpha + 1)(\sigma + 1)}
-      {2(\sigma - 1)}}
-    \leq
-    \frac{
-      \alpha^2}
-    {
-      2\underbrace{
-        \abs{\sigma - 1}
-      }_{
-        \geq 1
-      }
-    }
-    + \frac{
-      (\alpha + 1)
-      \overbrace{
-        \abs{\sigma + 1}
-      }^{
-        \leq 1
-      }
-    }
-    {2\underbrace{\abs{\sigma - 1}}_{\geq 1}}
-    \leq
-    \frac{
-      \alpha^2
-      + \alpha + 1
-    }{2}
-    \leq 1                  \\
-    \frac{\alpha^2 + \alpha - 1}{2}
-                & \leq 0
-    \Rightarrow
-    \alpha_{1,2}
-    =
-    \frac{-1 \pm \sqrt{5}}{2}
-    \approx -1.618, 0.618
-    \Rightarrow
-    \alpha \leq 0.618
-  \end{align*}
-
+    \norm*{\xi}                                    & = \norm*{-\dfrac{\alpha^2 + 2(\alpha + 1)(\sigma + 1)}{2(\sigma - 1)}} \leq \dfrac{\alpha^2}{2\underbrace{\abs*{\sigma - 1}}_{\geq 1}} + \dfrac{(\alpha + 1)\overbrace{\abs*{\sigma + 1}}^{\leq 1}}{2\underbrace{\abs{\sigma - 1}}_{\geq 1}} \leq \dfrac{\alpha^2+ \alpha + 1}{2} \leq 1 \\
+    \tfrac{1}{2}\left(\alpha^2 + \alpha - 1\right) & \leq 0 \Rightarrow \alpha_{1,2} = \tfrac{1}{2}\left(-1 \pm \sqrt{5}\right) \approx -1.618, 0.618 \Rightarrow \alpha \leq 0.618\\
+    \norm*{\xi}                                    & \leq 1 \implies \alpha \leq 0.618 \text{ and } \sigma = \frac{\mu k}{h^2}(\cos\beta - 1) \leq 0 \tag{Stability} 
+  \end{align*}\qed
 \end{proof}
-
-
-
 
 

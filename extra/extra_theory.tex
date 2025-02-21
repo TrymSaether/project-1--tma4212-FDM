@@ -98,3 +98,140 @@ If we choose time step \(k\) such that \(k \sim h^2\) is of similar order as the
 \begin{equation}
   \norm{\tau_m^n} = \mathcal{O}(k + \frac{h^4}{k}) \approx \mathcal{O}(k^2 + h^2) \quad \text{where} \quad k \sim h^2
 \end{equation}
+
+
+
+\paragraph{System of equations}
+
+For a fixed time step \(n\), we can write the system of equations as
+\begin{align*}
+  \begin{pmatrix}
+    S_{1,1}^{n+1}     \\
+    S_{1,2}^{n+1}     \\
+    \vdots            \\
+    S_{M-1,M-1}^{n+1} \\
+    I_{1,1}^{n+1}     \\
+    I_{1,2}^{n+1}     \\
+    \vdots            \\
+    I_{M-1,M-1}^{n+1}
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    A_{11} & A_{12} \\
+    A_{21} & A_{22}
+  \end{pmatrix}
+  \begin{pmatrix}
+    S_{1,1}^n     \\
+    S_{1,2}^n     \\
+    \vdots        \\
+    S_{M-1,M-1}^n \\
+    I_{1,1}^n     \\
+    I_{1,2}^n     \\
+    \vdots        \\
+    I_{M-1,M-1}^n
+  \end{pmatrix}
+\end{align*}
+
+
+The first matrix \(A_{11}\) is:
+\small
+\begin{align*}
+    A_{11} &= \scriptscriptstyle
+    \begin{bmatrix}
+        1 - \beta S_{1,1}^n - \tfrac{4\mu_S}{h^2} & \tfrac{\mu_S}{h^2} & 0 & \tfrac{\mu_S}{h^2} & 0 & \cdots & 0 \\
+        \tfrac{\mu_S}{h^2} & 1 - \beta S_{1,2}^n - \tfrac{4\mu_S}{h^2} & \tfrac{\mu_S}{h^2} & 0 & \tfrac{\mu_S}{h^2} & \cdots & 0 \\
+        0 & \frac{\mu_S}{h^2} & 1 - \beta S_{1,3}^n - \tfrac{4\mu_S}{h^2} & 0 & 0 & \cdots & 0 \\
+        \tfrac{\mu_S}{h^2} & 0 & 0 & 1 - \beta S_{2,1}^n - \tfrac{4\mu_S}{h^2} & \tfrac{\mu_S}{h^2} & \cdots & 0 \\
+        \vdots & \vdots & \vdots & \vdots & \ddots & \ddots & \vdots \\
+        0 & 0 & 0 & 0 & \cdots & 1 - \beta S_{M-1,M-1}^n - \tfrac{4\mu_S}{h^2} & 0
+    \end{bmatrix}
+\end{align*}
+
+The second matrix \(A_{22}\) is:
+\begin{align*}
+    A_{22} &= \scriptscriptstyle
+        \begin{bmatrix}
+            1 + \beta S_{1,1}^n - \gamma - \tfrac{4\mu_I}{h^2} & \tfrac{\mu_I}{h^2} & 0 & \tfrac{\mu_I}{h^2} & 0 & \cdots & 0 \\
+            \tfrac{\mu_I}{h^2} & 1 + \beta S_{1,2}^n - \gamma - \tfrac{4\mu_I}{h^2} & \tfrac{\mu_I}{h^2} & 0 & \tfrac{\mu_I}{h^2} & \cdots & 0 \\
+            0 & \tfrac{\mu_I}{h^2} & 1 + \beta S_{1,3}^n - \gamma - \tfrac{4\mu_I}{h^2} & 0 & 0 & \cdots & 0 \\
+            \tfrac{\mu_I}{h^2} & 0 & 0 & 1 + \beta S_{2,1}^n - \gamma - \tfrac{4\mu_I}{h^2} & \tfrac{\mu_I}{h^2} & \cdots & 0 \\
+            \vdots & \vdots & \vdots & \vdots & \ddots & \ddots & \vdots \\
+            0 & 0 & 0 & 0 & \cdots & 1 + \beta S_{M-1}^n - \gamma - \tfrac{4\mu_I}{h^2}
+        \end{bmatrix}
+\end{align*}
+
+The matrices \(A_{12}\) and \(A_{21}\) are both zero matrices:
+\begin{align*}
+    A_{12} = A_{21} &=
+    \begin{bmatrix}
+        0 & 0 & 0 & \cdots & 0 \\
+        0 & 0 & 0 & \cdots & 0 \\
+        \vdots & \vdots & \vdots & \ddots & \vdots \\
+        0 & 0 & 0 & \cdots & 0
+    \end{bmatrix}
+\end{align*}
+\begin{tikzpicture}[
+    auto matrix/.style={
+    matrix of nodes,
+    draw, thick,
+    inner sep=0pt,
+    nodes in empty cells,
+    column sep=-0.2pt,
+    row sep=-0.2pt,
+    cells={
+    nodes={
+    minimum width=2em,
+    minimum height=2em,
+    draw,
+    very thin,
+    anchor=center,
+    fill=white,
+    execute at begin node={%
+    $\vphantom{x_1^1}
+        \pgfmathtruncatemacro{\itest}{sign(4-\the\pgfmatrixcurrentcolumn)*sign(4-\the\pgfmatrixcurrentrow)}
+        \unless\ifnum\itest=0
+        {#1}^{\myrowindex{\the\pgfmatrixcurrentrow}}_{\mycolindex{\the\pgfmatrixcurrentcolumn}}
+        \fi
+        \ifnum\the\pgfmatrixcurrentrow\the\pgfmatrixcurrentcolumn=14 \cdots\fi
+        \ifnum\the\pgfmatrixcurrentrow\the\pgfmatrixcurrentcolumn=41 \vdots\fi
+        \ifnum\the\pgfmatrixcurrentrow\the\pgfmatrixcurrentcolumn=44 \ddots\fi
+    $
+    }
+    }
+    }
+    }
+    ]
+    % Helper commands
+    \newcommand{\mycolindex}[1]{\ifnum#1=5 M\else #1\fi}
+    \newcommand{\myrowindex}[1]{\ifnum#1=5 N\else #1\fi}
+
+    % Matrices for Susceptible population
+    \matrix[auto matrix=S,xshift=5em,yshift=5em](matS){
+         &  &  &  & \\
+         &  &  &  & \\
+         &  &  &  & \\
+         &  &  &  & \\
+         &  &  &  & \\
+    };
+
+    % Matrices for Infected population
+    \matrix[auto matrix=I,xshift=-10em,yshift=0em](matI){
+         &  &  &  & \\
+         &  &  &  & \\
+         &  &  &  & \\
+         &  &  &  & \\
+         &  &  &  & \\
+    };
+
+    % Arrows and labels
+    \draw[thick,-stealth] ([xshift=0, yshift=-2ex]matS.south east) -- ([xshift=-28ex,yshift=-5em]matS.south east)
+    node[midway,right] {$y$};
+    \draw[thick,-stealth] ([yshift=-1ex]matS.south west) -- ([yshift=-1ex]matS.south east)
+    node[midway,below] {$x$};
+    \draw[thick,-stealth] ([xshift=-1ex]matS.north west) -- ([xshift=-1ex]matS.south west)
+    node[midway,left] {$t$};
+
+    % Labels for matrices
+    \node[above] at (matS.north) {Susceptible};
+    \node[above] at (matI.north) {Infected};
+\end{tikzpicture}

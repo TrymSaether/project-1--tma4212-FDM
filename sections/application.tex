@@ -6,32 +6,47 @@
     S_t & = -\beta IS + \mu_S \Delta S           \\
     I_t & = \beta IS - \gamma I + \mu_I \Delta I
   \end{cases}
-  \quad \Longrightarrow
+  \implies
   \begin{cases}
-    \frac{\partial S}{\partial t} & = -\beta IS + \mu_S \left(\frac{\partial^2 }{\partial x^2} + \frac{\partial^2 }{\partial y^2}\right) S           \\
-    \frac{\partial I}{\partial t} & = \beta IS - \gamma I + \mu_I \left(\frac{\partial^2 }{\partial x^2} + \frac{\partial^2 }{\partial y^2}\right) I
+    \frac{\partial S}{\partial t} & = -\beta IS + \mu_S\left(\frac{\partial^2 }{\partial x^2}S + \frac{\partial^2 }{\partial y^2} S \right)            \\
+    \frac{\partial I}{\partial t} & = \beta IS - \gamma I + \mu_I \left(\frac{\partial^2 }{\partial x^2}I  + \frac{\partial^2 }{\partial y^2} I\right)
   \end{cases}
 \end{align}
 
 \subsection{Discretization}
 
 \begin{align*}
-    u_{i,j}^n & = u(x_i,y_j,t_n) \tag{exact} \\
-    U_m^n & \approx u(x_m,y_j,t_n) \tag{approx} \\
-    x_i & = ih = i\frac{1}{M}, \quad y_j = j = j\frac{1}{M} & \text{for } i,j = 0,1,\ldots,M \\
-    t_n & = nk = n\frac{1}{N} & \text{for } n = 0,1,\ldots,N
+  u_{i,j}^n & = u(x_i,y_j,t_n) \tag{exact}                                                       \\
+  U_m^n     & \approx u(x_m,y_j,t_n) \tag{approx}                                                \\
+  x_i       & = ih = i\frac{1}{M}, \quad y_j = j = j\frac{1}{M} & \text{for } i,j = 0,1,\ldots,M \\
+  t_n       & = nk = n\frac{1}{N}                               & \text{for } n = 0,1,\ldots,N
 \end{align*}
 
 \subsection{Method}
 \begin{align*}
-    \partial_x^2 U_{i,j}^n & = \frac{1}{h^2} \left(U_{i+1,j}^n - 2U_{i,j}^n + U_{i-1,j}^n \right) + \mathcal{O}(h^2) \\
-    \partial_y^2 U_{i,j}^n & = \frac{1}{h^2} \left(U_{i,j+1}^n - 2U_{i,j}^n + U_{i,j-1}^n\right) + \mathcal{O}(h^2) \\
-    \partial_t U_{i,j}^n & = \frac{1}{k^2} \left(U_{i+1,j}^n + U_{i-1,j}^n + U_{i,j+1}^n + U_{i,j-1}^n - 4U_{i,j}^n\right) + \mathcal{O}(k^2) \quad \text{for } i,j = 1,2,\ldots,M-1
+  \partial_x^2 U_{i,j}^n & = \frac{1}{h^2} \left(U_{i+1,j}^n - 2U_{i,j}^n + U_{i-1,j}^n \right) + \mathcal{O}(h^2)                                                                   \\
+  \partial_y^2 U_{i,j}^n & = \frac{1}{h^2} \left(U_{i,j+1}^n - 2U_{i,j}^n + U_{i,j-1}^n\right) + \mathcal{O}(h^2)                                                                    \\
+  \partial_t U_{i,j}^n   & = \frac{1}{k^2} \left(U_{i+1,j}^n + U_{i-1,j}^n + U_{i,j+1}^n + U_{i,j-1}^n - 4U_{i,j}^n\right) + \mathcal{O}(k^2) \quad \text{for } i,j = 1,2,\ldots,M-1
+\end{align*}
+
+\subsection{Scheme}
+
+\paragraph{Susceptible}
+
+\begin{align*}
+  \partial_t S                                        & = -\beta IS + \mu_S \left(\partial_x^2 S + \partial_y^2 S\right)                                                                                                                                                                       \\
+  \frac{1}{h}\left(S_{i, j}^{n+1} - S_{i, j}^n\right) & =  - \beta \mathcal{I}_{i,j}^n \mathcal{S}_{i,j}^n +  \frac{\mu_S}{h^2} \left(\mathcal{S}_{i+1,j}^n + \mathcal{S}_{i-1,j}^n + \mathcal{S}_{i,j+1}^n + \mathcal{S}_{i,j-1}^n - 4\mathcal{S}_{i,j}^n\right) + \mathcal{O}(h^2)           \\
+  S_{i,j}^{n+1}                                       & = h \left(1 - \beta\mathcal{I}_{i,j}^n - \dfrac{4\mu_S}{h^2}\right)\mathcal{S}_{i,j}^n + \frac{\mu_S}{h} \left(\mathcal{S}_{i+1,j}^n + \mathcal{S}_{i-1,j}^n + \mathcal{S}_{i,j+1}^n + \mathcal{S}_{i,j-1}^n\right) + \mathcal{O}(h^2)
 \end{align*}
 
 
 
-
-
-
+\clearpage
+\paragraph{Infected}
+\noindent
+\begin{align*}
+  \partial_t \mathcal{I}                                                & = \beta \mathcal{I}\mathcal{S} - \gamma \mathcal{I} + \mu_I \left(\partial_x^2 + \partial_y^2\right)\mathcal{I}                                                                                                                                      \\
+  \frac{1}{h}\left(\mathcal{I}_{i,j}^{n+1} - \mathcal{I}_{i,j}^n\right) & = \beta \mathcal{I}_{i,j}^n \mathcal{S}_{i,j}^n - \gamma \mathcal{I}_{i,j}^n + \frac{\mu_I}{h^2}\left(\mathcal{I}_{i+1,j}^n + \mathcal{I}_{i-1,j}^n + \mathcal{I}_{i,j+1}^n + \mathcal{I}_{i,j-1}^n - 4\mathcal{I}_{i,j}^n\right) + \mathcal{O}(h^2) \\
+  \mathcal{I}_{i,j}^{n+1}                                               & = \left(1 + \beta\mathcal{S}_{i,j}^n - \gamma - \dfrac{4\mu_I}{h^2}\right)\mathcal{I}_{i,j}^n + \frac{\mu_I}{h}\left(\mathcal{I}_{i+1,j}^n + \mathcal{I}_{i-1,j}^n + \mathcal{I}_{i,j+1}^n + \mathcal{I}_{i,j-1}^n\right) + \mathcal{O}(h^2)
+\end{align*}
 
