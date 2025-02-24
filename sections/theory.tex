@@ -87,24 +87,24 @@ The heat equation is a \emph{parabolic} PDE describing how processes evolve over
 Discretizing the heat equation involves dividing the spatial domain \(\Omega\) into \(M\) equally spaced points, with \emph{step length \(h\)} and the temporal domain into \(N\) steps, with \emph{step size \(k\)}.
 Each grid point is denoted by \((x_m, t_n)\), where \(x_m = m h\) and \(t_n = n k\) for \(m = 0, \ldots, M\) and \(n = 0, \ldots, N\). The solution \(U_m^n\) approximates the temperature \(u(x_m, t_n)\) at each grid point.
 
-\[
-  U_m^n \approx u(x_m, t_n) \quad \text{for } (x_m, t_n) \in \mathbb{G}
-\]
+\begin{minipage}[l]{0.45\textwidth}
+  \begin{align*}
+    U_m^n      & \approx u(x_m, t_n) \quad \text{for } (x_m, t_n) \in \mathbb{G} \\[2em]
+    \mathbb{G} & := \left\{ (x_m, t_n):\,
+    \begin{cases}
+      x_m = m h & h = L/M,\; m = 0, \ldots, M \\
+      t_n = n k & k = T/N,\; n = 0, \ldots, N
+    \end{cases}\right\}
+  \end{align*}\label{eq:grid_points}
+  Where \(L\) is the spatial domain length and \(T\) is the final time.
+  \begin{remark}{Constant Grid Spacing}{step_sizes}
+    For simplicity, \(h\) and \(k\) are constant \( x_{m+1} = x_m + h,\quad t_{n+1} = t_n + k \).
+  \end{remark}
 
-
-\begin{align*}
-  \mathbb{G} & := \left\{ (x_m, t_n):\,
-  \begin{cases}
-    x_m = m h & h = \tfrac{L}{M},\; m = 0, \ldots, M \\
-    t_n = n k & k = \tfrac{T}{N},\; n = 0, \ldots, N
-  \end{cases}\right\}
-\end{align*}\label{eq:grid_points}
-
-Where \(L\) is the spatial domain length and \(T\) is the final time.
-
-\begin{center}
+\end{minipage}
+\hspace{0.05\textwidth}
+\begin{minipage}[r]{0.45\textwidth}
   \begin{tikzpicture}
-
     % Axes
     \draw[->] (0,0) -- (5.2,0) node[right] {\(t\)};
     \draw[->] (0,0) -- (0,3.2) node[above] {\(x\)};
@@ -138,24 +138,15 @@ Where \(L\) is the spatial domain length and \(T\) is the final time.
     \fill (5,0) circle (2pt);
     \fill (0,0.5) circle (2pt);
     \fill (0,3) circle (2pt);
-
   \end{tikzpicture}
-\end{center}
-
-\begin{remark}{Constant Grid Spacing}{step_sizes}
-  For simplicity, \(h\) and \(k\) are constant \( x_{m+1} = x_m + h,\quad t_{n+1} = t_n + k \).
-\end{remark}
+\end{minipage}
 
 \section{Finite Difference Schemes}
-
 Finite difference methods approximate differential equations by replacing them with a system of algebraic equations on the chosen grid.
 The heat equation is often solved with these methods for their simplicity and computational efficiency.
-
 \paragraph{The Forward-Time Central-Space (FTCS) scheme}
-
 FTSC is a simple and widely used method for solving the heat equation.
 It approximates the time derivative with a forward difference and the spatial derivative with a central difference.
-
 
 \begin{align*}
   \frac{1}{k} \nabla_t U_m^{n+1} & = \frac{\mu}{h^2} \delta_x^2 U_m^{n+1} + f(U_m^n)                                              \\
@@ -167,11 +158,9 @@ It approximates the time derivative with a forward difference and the spatial de
 
 The Crank-Nicolson scheme is an implicit method that approximates the spatial derivative at the midpoint between time steps. It is unconditionally stable and second-order accurate in time and space.
 \begin{align*}
-  U_m^\star & = U_m^n + \frac{r}{2} \left( \delta_x^2 U_m^\star + \delta_x^2 U_m^n \right) + k f(U_m^n), \quad r = \frac{\mu k}{h^2} \\
-  U_m^{n+1} & = U_m^\star + \frac{k}{2} \left( f(U_m^\star) - f(U_m^n) \right) \tag{Crank-Nicolson}
+  U_m^\star & = U_m^n + \frac{r}{2} \left( \delta_x^2 U_m^\star + \delta_x^2 U_m^n \right) + k f(U_m^n), \quad r = \frac{\mu k}{h^2} \tag{Crank-Nicolson} \\
+  U_m^{n+1} & = U_m^\star + \frac{k}{2} \left( f(U_m^\star) - f(U_m^n) \right)
 \end{align*}
-
-
 
 \section{Error Analysis}
 Given the function \(f(u) = au\) for constant \(a\), we first want to analyze the consistency of the Crank-Nicolson scheme by determining the local truncation error (LTE).
@@ -323,8 +312,8 @@ The Von Neumann stability analysis is a method to determine the stability of a f
   Furthermore, we can now find a bound for the amplification factor:
   \begin{align*}
     \norm*{\xi}                                    & = \norm*{-\dfrac{\alpha^2 + 2(\alpha + 1)(\sigma + 1)}{2(\sigma - 1)}} \leq \dfrac{\alpha^2}{2\underbrace{\abs*{\sigma - 1}}_{\geq 1}} + \dfrac{(\alpha + 1)\overbrace{\abs*{\sigma + 1}}^{\leq 1}}{2\underbrace{\abs{\sigma - 1}}_{\geq 1}} \leq \dfrac{\alpha^2+ \alpha + 1}{2} \leq 1 \\
-    \tfrac{1}{2}\left(\alpha^2 + \alpha - 1\right) & \leq 0 \Rightarrow \alpha_{1,2} = \tfrac{1}{2}\left(-1 \pm \sqrt{5}\right) \approx -1.618, 0.618 \Rightarrow \alpha \leq 0.618\\
-    \norm*{\xi}                                    & \leq 1 \implies \alpha \leq 0.618 \text{ and } \sigma = \frac{\mu k}{h^2}(\cos\beta - 1) \leq 0 \tag{Stability} 
+    \tfrac{1}{2}\left(\alpha^2 + \alpha - 1\right) & \leq 0 \Rightarrow \alpha_{1,2} = \tfrac{1}{2}\left(-1 \pm \sqrt{5}\right) \approx -1.618, 0.618 \Rightarrow \alpha \leq 0.618                                                                                                                                                           \\
+    \norm*{\xi}                                    & \leq 1 \implies \alpha \leq 0.618 \text{ and } \sigma = \frac{\mu k}{h^2}(\cos\beta - 1) \leq 0 \tag{Stability}
   \end{align*}\qed
 \end{proof}
 

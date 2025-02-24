@@ -128,15 +128,20 @@ def simulate_sir_diffusion_2d_fast(
 
     return S_list, I_list, times, (Mx, My)
 
-
-Mx = 5
-My = 5
+    
+Mx = 3
+My = 3
 dt = 0.01
 T = 30
 beta = 3.0
 gamma = 1
 muS = 0.01
 muI = 0.01
+L = build_laplacian_2d_neumann_like(Mx, My, 1.0, 1.0)
+# print L 
+print(L.todense())
+
+
 
 # 1) Run the simulation
 S_list, I_list, times, (Mx, My) = simulate_sir_diffusion_2d_fast(
