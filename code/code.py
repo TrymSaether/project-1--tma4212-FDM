@@ -32,7 +32,6 @@ class SIRSimulation:
                     self.I[idx_flat] = initial_infection
                     self.S[idx_flat] -= initial_infection
 
-        self.L_matrix_e = self.build_laplacian_2d()
         self.L_matrix = self.laplacian(Nx, Ny)
 
     
@@ -48,30 +47,7 @@ class SIRSimulation:
         A = kron(eye(Mi), B)
         C = diags([1,1],[-Mi,Mi],shape=(Mi2, Mi2), format="lil")
         A = (A+C).tocsr() # Konverter til csr-format (necessary for spsolve) 
-        return A
-
-    def build_laplacian_2d(self):
-        Nx, Ny, h = self.Nx, self.Ny, self.h
-        N = Nx * Ny
-
-        def idx(i, j):
-            return i * Ny + j
-
-        rows, cols, vals = [], [], []
-
-        for i in range(Nx):
-            for j in range(Ny):
-                r = idx(i, j)
-                if i == 0 or i == Nx - 1 or j == 0 or j == Ny - 1:
-                    rows.append(r)
-                    cols.append(r)
-                    vals.append(0.0)
-                else:
-                    rows.extend([r, r, r, r, r])
-                    cols.extend([r, idx(i-1,j), idx(i+1,j), idx(i,j-1), idx(i,j+1)])
-                    vals.extend([-4/h**2, 1/h**2, 1/h**2, 1/h**2, 1/h**2])
-
-        return coo_matrix((vals, (rows, cols)), shape=(N, N)).tocsr()
+        return A/self.h**2
 
     def step(self):
         infection = self.beta * self.S * self.I
@@ -110,19 +86,6 @@ class SIRSimulation:
         anim = FuncAnimation(fig, update, frames=self.Nt//10, interval=20)
         plt.show()
     
-    def compare_laplacian(self):
-        fig, axes = plt.subplots(1, 2, figsize=(10, 5))
-
-        axes[0].imshow((self.L_matrix_e).todense())
-        axes[0].set_title('Explicit')
-        axes[0].axis('off')
-
-        axes[1].imshow((self.L_matrix).todense())
-        axes[1].set_title('Anne Kvernoe')
-        axes[1].axis('off')
-
-        plt.tight_layout()
-        plt.show()
 
 if __name__ == "__main__":
     sim = SIRSimulation()
