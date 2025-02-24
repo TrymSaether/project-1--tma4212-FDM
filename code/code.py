@@ -33,24 +33,8 @@ class SIRSimulation:
                     self.S[idx_flat] -= initial_infection
 
         self.L_matrix_e = self.build_laplacian_2d()
-        self.L_matrix_kron = self.laplacian_2d(Nx, Ny)
         self.L_matrix = self.laplacian(Nx, Ny)
 
-    def laplacian_1d(self, size):
-        diagonals = [-np.ones(size - 1), 2 * np.ones(size), -np.ones(size - 1)]
-        offsets = [-1, 0, 1]
-        L = diags(diagonals, offsets, shape=(size, size), format="csr")
-        
-        L[0, 0] = L[-1, -1] = 1
-        L[0, 1] = L[-1, -2] = -1
-
-        return L
-
-    def laplacian_2d(self, n, m):
-        C_m = self.laplacian_1d(m)
-        C_n = self.laplacian_1d(n)
-        L2D = (kron(C_n, eye(m, format="csr")) + kron(eye(n, format="csr"), C_m))
-        return L2D.tocsr()
     
     def laplacian(self, n, m):
         '''
@@ -127,19 +111,15 @@ class SIRSimulation:
         plt.show()
     
     def compare_laplacian(self):
-        fig, axes = plt.subplots(1, 3, figsize=(10, 5))
+        fig, axes = plt.subplots(1, 2, figsize=(10, 5))
 
         axes[0].imshow((self.L_matrix_e).todense())
         axes[0].set_title('Explicit')
         axes[0].axis('off')
 
-        axes[1].imshow((self.L_matrix_kron).todense())
-        axes[1].set_title('Kron')
+        axes[1].imshow((self.L_matrix).todense())
+        axes[1].set_title('Anne Kvernoe')
         axes[1].axis('off')
-
-        axes[2].imshow((self.L_matrix).todense())
-        axes[2].set_title('Anne Kvernoe')
-        axes[2].axis('off')
 
         plt.tight_layout()
         plt.show()
