@@ -1,45 +1,8 @@
 \section{Theory}
 
 \subsection{Theoretical Background}
-
-\begin{definition}{Local Truncation Error}{lte}
-  The local truncation error (LTE) is the error made at a single grid point when approximating a differential equation with a finite difference scheme.
-  \[
-    \norm{\tau_m^n} = \norm{u(x_m, t_n) - U_m^n} = \mathcal{O}(h^p + k^q) \quad \text{as} \quad h, k \to 0
-  \]
-  where \(p\) and \(q\) are the order of the spatial and temporal discretizations, respectively.
-\end{definition}
-
-
-\paragraph{Taylor Expansions}
-
-\subparagraph{Spatial Taylor Expansions}
-\begin{align*}
-  u_{m+1}^n & \approx u_m^n + h \partial_x u_m^n + \frac{h^2}{2} \partial_x^2 u_m^n + \frac{h^3}{6} \partial_x^3 u_m^n + \mathcal{O}(h^4) \\
-  u_{m-1}^n & \approx u_m^n - h \partial_x u_m^n + \frac{h^2}{2} \partial_x^2 u_m^n - \frac{h^3}{6} \partial_x^3 u_m^n + \mathcal{O}(h^4) \\
-\end{align*}
-
-\subparagraph{Temporal Taylor Expansions}
-\begin{align*}
-  u_m^{n+1} & \approx u_m^n + k \partial_t u_m^n + \frac{k^2}{2} \partial_t^2 u_m^n + \frac{k^3}{6} \partial_t^3 u_m^n + \mathcal{O}(k^4)                                                                                                            \\
-  u_m^\star & \approx u_m^n + \Phi k \partial_t u_m^n + \frac{(\Phi k)^2}{2} \partial_t^2 u_m^n + \frac{(\Phi k)^3}{6} \partial_t^3 u_m^n + \mathcal{O}(k^4)                                                                                         \\
-            & = u_m^n + \Phi k \left(\mu \partial_x^2 u_m^n + a u_m^n\right) + \frac{(\Phi k)^2}{2} \left(\mu \partial_x^2 \left(\mu \partial_x^2 u_m^n + a u_m^n\right) + a \left(\mu \partial_x^2 u_m^n + a u_m^n\right)\right) + \mathcal{O}(k^4) \\
-\end{align*}
-
-\subparagraph{Spatial and Temporal Taylor Expansion}
-\begin{align*}
-  u_{m+1}^\star & \approx u_m^n + \left(\Phi k \partial_t u_m^n + h \partial_x u_m^n\right) + \frac{1}{2}\left(\Phi^2 k^2 \partial_t^2 u_m^n + h^2 \partial_x^2 u_m^n\right) + \mathcal{O}(h^3 + k^3) \\
-  u_{m-1}^\star & \approx u_m^n + \left(\Phi k \partial_t u_m^n - h \partial_x u_m^n\right) + \frac{1}{2}\left(\Phi^2 k^2 \partial_t^2 u_m^n + h^2 \partial_x^2 u_m^n\right) + \mathcal{O}(h^3 + k^3) \\
-\end{align*}
-\subparagraph{Operator Taylor Expansion}
-\begin{align*}
-  \delta_x^2 u_m^n = u_{m+1}^n - 2u_m^n + u_{m-1}^n = h^2\partial_{xx}u_m^n + \mathcal{O}(h^4) \\
-  \delta_x^2 u_m^\star = u_{m+1}^\star - 2u_m^\star + u_{m-1}^\star = h^2\partial_{xx}u_m^n + \mathcal{O}(h^4 + k^4) \\
-\end{align*}
-
-\paragraph{Notation}
 \begin{tabular}{ll}
-  \textbf{Symbol}               & \textbf{Meaning}                       \\
+  \textbf{Notation}               & \textbf{Meaning}                       \\
   \hline                                                                 \\[-1em]
   \(u = u(x, t)\)               & Exact temperature distribution         \\
   \(u_m^n = u(x_m, t_n)\)       & Exact temperature at grid point        \\
@@ -63,6 +26,28 @@
   \hline
 \end{tabular}
 
+\begin{definition}{Local Truncation Error}{lte}
+  The local truncation error (LTE) is the error made at a single grid point when approximating a differential equation with a finite difference scheme.
+  \[
+    \norm{\tau_m^n} = \norm{u(x_m, t_n) - U_m^n} = \mathcal{O}(h^p + k^q) \quad \text{as} \quad h, k \to 0
+  \]
+  where \(p\) and \(q\) are the order of the spatial and temporal discretizations, respectively.
+\end{definition}
+
+
+\paragraph{Common Taylor Expansions}
+
+\begin{align*}
+  u_{m+1}^n & \approx u_m^n + h \partial_x u_m^n + \frac{h^2}{2} \partial_x^2 u_m^n + \frac{h^3}{6} \partial_x^3 u_m^n + \mathcal{O}(h^4) \tag{T1} \label{eq:taylor_forward} \\
+  u_{m-1}^n & \approx u_m^n - h \partial_x u_m^n + \frac{h^2}{2} \partial_x^2 u_m^n - \frac{h^3}{6} \partial_x^3 u_m^n + \mathcal{O}(h^4) \tag{T2} \label{eq:taylor_backward} \\
+  u_m^{n+1} & \approx u_m^n + k \partial_t u_m^n + \frac{k^2}{2} \partial_t^2 u_m^n + \frac{k^3}{6} \partial_t^3 u_m^n + \mathcal{O}(k^4) \tag{T3} \label{eq:taylor_time} \\                                                                                                          \\
+  u_m^\star & \approx u_m^n + \Phi k \partial_t u_m^n + \frac{(\Phi k)^2}{2} \partial_t^2 u_m^n + \frac{(\Phi k)^3}{6} \partial_t^3 u_m^n + \mathcal{O}(k^4) \tag{T4} \label{eq:taylor_intermediate} \\
+  u_m^\star & = u_m^n + \Phi k \left(\mu \partial_x^2 u_m^n + a u_m^n\right) + \frac{(\Phi k)^2}{2} \left(\mu \partial_x^2 \left(\mu \partial_x^2 u_m^n + a u_m^n\right) + a \left(\mu \partial_x^2 u_m^n + a u_m^n\right)\right) + \mathcal{O}(k^4) \tag{T5} \label{eq:taylor_pde} \\
+  u_{m+1}^\star & \approx u_m^n + \left(\Phi k \partial_t u_m^n + h \partial_x u_m^n\right) + \frac{1}{2}\left(\Phi^2 k^2 \partial_t^2 u_m^n + h^2 \partial_x^2 u_m^n\right) + \mathcal{O}(h^3 + k^3) \tag{T6} \label{eq:taylor_mixed_forward} \\
+  u_{m-1}^\star & \approx u_m^n + \left(\Phi k \partial_t u_m^n - h \partial_x u_m^n\right) + \frac{1}{2}\left(\Phi^2 k^2 \partial_t^2 u_m^n + h^2 \partial_x^2 u_m^n\right) + \mathcal{O}(h^3 + k^3) \tag{T7} \label{eq:taylor_mixed_backward} \\[2ex]
+  \delta_x^2 u_m^n &= u_{m+1}^n - 2u_m^n + u_{m-1}^n = h^2\partial_{xx}u_m^n + \mathcal{O}(h^4) \tag{T8} \label{eq:central_diff} \\
+  \delta_x^2 u_m^\star &= u_{m+1}^\star - 2u_m^\star + u_{m-1}^\star = h^2\partial_{xx}u_m^n + \mathcal{O}(h^4 + k^4) \tag{T9} \label{eq:central_diff_star}
+\end{align*}
 
 \subsection{The Heat Equation}
 
@@ -187,40 +172,49 @@ It is the difference between the exact solution \(u(x_m, t_n)\) and the numerica
   \]
 \end{theorem}
 \begin{proof}[Proof of Theorem~\ref{thm:lte_cn}]
+  We start with exact solution for the Crank--Nicolson half-step:
+  \begin{align*}
+    u_m^\star
+    &= u_m^n
+    + \frac{r}{2}\left(\delta_x^2 u_m^\star + \delta_x^2 u_m^n\right)
+    + kaU_m^n 
+  \end{align*}
+  We expand \(\delta_x^2 U_m^\star\) and \(\delta_x^2 U_m^n\) around $(x_m,t_n)$ using Taylor expansions.
+  
+  \begin{align*}
+    u_m^\star &= u_m^n 
+    + \tfrac{r}{2}\left(h^2\partial_{xx}u_m^n + h^2\partial_{xx}u_m^n + \cdots \right) 
+    + ka u_m^n \\
+    &= u_m^n
+    + rh^2\partial_{xx}u_m^n + ka u_m^n
+    + \mathcal{O}(h^4 + k^4)
+  \end{align*}
 
-  We will use Taylor expansions around $(x_m, t_n)$ in both space and time~\ref{eq:taylor}.
-
-  From central differences, we have
   \[
-    \delta_x^2 u_m^n = h^2\partial_{xx}u_m^n + \mathcal{O}(h^4)
-  \]
-  Since $u_m^\star = u(x_m, t_n+\Phi k)$, similar Taylor expansions yield
-  \[
-    \delta_x^2 u_m^\star
-    = u_{m+1}^\star - 2u_m^\star + u_{m-1}^\star
-    = h^2\partial_{xx}u_m^n + \mathcal{O}\bigl(h^4 + k^4\bigr).
-  \]
-
-  Substitute these into the Crank--Nicolson half-step:
-  \[
-    U_m^\star
-    = U_m^n
-    + \frac{r}{2}\bigl(\delta_x^2 U_m^\star + \delta_x^2 U_m^n\bigr)
-    + kaU_m^n,
-    \quad
-    r = \frac{\mu k}{h^2}.
-  \]
-  Matching $U_m^\star$ with the exact solution plus higher-order terms, we get
-  \[
-    U_m^\star
-    = u_m^n
-    + rh^2\partial_{xx}u_m^n
-    + kau_m^n
-    + \mathcal{O}\bigl(h^4 + k^4\bigr).
+    u_m^{n+1} = u_m^\star + \tfrac{k}{2}\left(f(u_m^\star) - f(u_m^n)\right) = u_m^\star + \tfrac{ka}{2}\left(u_m^\star - u_m^n\right)
   \]
 
   Next, we compute the full step using the intermediate solution:
+  \begin{align*}
+    u_m^{n+1} &=
+    \left(u_m^n
+    + rh^2\partial_{xx}u_m^n + \cdots + ka u_m^n \right)
+    + \tfrac{ka}{2}\left(rh^2\partial_{xx}u_m^n + \cdots + ka u_m^n - u_m^n \right) \\
+    &=
+    u_m^n
+    + \left(rh^2\partial_{xx}u_m^n + \cdots + ka u_m^n\right)
+    + \tfrac{ka}{2}\left(rh^2\partial_{xx}u_m^n + \cdots + (ka - 1)u_m^n \right) \\
+  \end{align*}
 
+  Then for the left hand side (LHS) we have:
+  \begin{align*}
+    u_m^{n+1} &=
+    u_m^n
+    + k\partial_t u_m^n
+    + \tfrac{k^2}{2}\partial_t^2 u_m^n
+    + \tfrac{k^3}{6}\partial_t^3 u_m^n
+    + \cdots
+  \end{align*}
   \[
     U_m^{n+1}
     = U_m^\star
