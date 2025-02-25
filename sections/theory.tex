@@ -1,6 +1,6 @@
-\chapter{Theory}
+\section{Theory}
 
-\section{Theoretical Background}
+\subsection{Theoretical Background}
 
 \begin{definition}{Local Truncation Error}{lte}
   The local truncation error (LTE) is the error made at a single grid point when approximating a differential equation with a finite difference scheme.
@@ -64,7 +64,7 @@
 \end{tabular}
 
 
-\section{The Heat Equation}
+\subsection{The Heat Equation}
 
 The heat equation is a fundamental partial differential equation (PDE) that governs how temperature evolves in a given region over time. In its simplest form, we consider a one-dimensional case in which heat flows along a single spatial dimension:
 \begin{align*}
@@ -87,7 +87,7 @@ The initial temperature distribution \(u_0(x)\) and boundary condition \(g(x, t)
 \paragraph{Parabolic PDE}
 The heat equation is a \emph{parabolic} PDE describing how processes evolve over time. For numerical solutions, the spatial and temporal domains are discretized, and the solution is approximated at discrete points. Finite difference methods efficiently handle these discretizations, allowing accurate approximations of the evolving temperature.
 
-\subsection{Discretization of the Heat Equation}
+\subsubsection{Discretization of the Heat Equation}
 Discretizing the heat equation involves dividing the spatial domain \(\Omega\) into \(M\) equally spaced points, with \emph{step length \(h\)} and the temporal domain into \(N\) steps, with \emph{step size \(k\)}.
 Each grid point is denoted by \((x_m, t_n)\), where \(x_m = m h\) and \(t_n = n k\) for \(m = 0, \ldots, M\) and \(n = 0, \ldots, N\). The solution \(U_m^n\) approximates the temperature \(u(x_m, t_n)\) at each grid point.
 
@@ -145,7 +145,7 @@ Each grid point is denoted by \((x_m, t_n)\), where \(x_m = m h\) and \(t_n = n 
   \end{tikzpicture}
 \end{minipage}
 
-\section{Finite Difference Schemes}
+\subsection{Finite Difference Schemes}
 Finite difference methods approximate differential equations by replacing them with a system of algebraic equations on the chosen grid.
 The heat equation is often solved with these methods for their simplicity and computational efficiency.
 
@@ -167,10 +167,10 @@ The Crank-Nicolson scheme is an implicit method that approximates the spatial de
   U_m^{n+1} & = U_m^\star + \frac{k}{2} \left( f(U_m^\star) - f(U_m^n) \right)
 \end{align*}
 
-\section{Error Analysis}
+\subsection{Error Analysis}
 Given the function \(f(u) = au\) for constant \(a\), we first want to analyze the consistency of the Crank-Nicolson scheme by determining the local truncation error (LTE).
 
-\subsection{Consistency analysis (Local Truncation Error)}
+\subsubsection{Consistency analysis (Local Truncation Error)}
 The local truncation error (LTE) is the error at a single grid point when approximating a differential equation with a finite difference scheme.
 It is the difference between the exact solution \(u(x_m, t_n)\) and the numerical approximation \(U_m^n\).
 
@@ -277,7 +277,7 @@ It is the difference between the exact solution \(u(x_m, t_n)\) and the numerica
   Therefore, under the usual choice $k \propto h^2$, the scheme is second-order accurate in both time and space. \qed
 \end{proof}
 
-\subsection{Stability Analysis (Von Neumann Stability)}
+\subsubsection{Stability Analysis (Von Neumann Stability)}
 The Von Neumann stability analysis is a method to determine the stability of a finite difference scheme by analyzing the growth of errors in the Fourier modes of the solution.
 \begin{theorem}{Stability of the Crank-Nicolson scheme}{stability_cn}
   The Crank-Nicolson scheme is stable for the heat equation with linear reaction term \(f(u) = au\) if:
@@ -322,4 +322,4 @@ The Von Neumann stability analysis is a method to determine the stability of a f
                           & = u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n + \tfrac{k^3}{6}\partial_t^3 u_m^n + \tfrac{ark}{2}h^2\partial_{xx} u_m^n + \tfrac{a^2k^2}{2}u_m^n + \mathcal{O}(k^4+h^4)
 \end{align*}
 
-\section{\color{red} Numerical Experiments}
+\subsection{\color{red} Numerical Experiments}

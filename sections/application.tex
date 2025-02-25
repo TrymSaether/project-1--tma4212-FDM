@@ -1,6 +1,6 @@
-\chapter{Application}
+\section{Application}
 
-\section{SIR Model}
+\subsection{SIR Model}
 \begin{align}
   \begin{cases}
     S_t & = -\beta IS + \mu_S \Delta S           \\
@@ -13,7 +13,7 @@
   \end{cases}
 \end{align}
 
-\subsection{Discretization}
+\subsubsection{Discretization}
 
 \begin{align*}
   u_{i,j}^n & = u(x_i,y_j,t_n) \tag{exact}                                                       \\
@@ -22,14 +22,14 @@
   t_n       & = nk = n\frac{1}{N}                               & \text{for } n = 0,1,\ldots,N
 \end{align*}
 
-\subsection{Method}
+\subsubsection{Method}
 \begin{align*}
   \partial_x^2 U_{i,j}^n & = \frac{1}{h^2} \left(U_{i+1,j}^n - 2U_{i,j}^n + U_{i-1,j}^n \right) + \mathcal{O}(h^2)                                                                   \\
   \partial_y^2 U_{i,j}^n & = \frac{1}{h^2} \left(U_{i,j+1}^n - 2U_{i,j}^n + U_{i,j-1}^n\right) + \mathcal{O}(h^2)                                                                    \\
   \partial_t U_{i,j}^n   & = \frac{1}{k^2} \left(U_{i+1,j}^n + U_{i-1,j}^n + U_{i,j+1}^n + U_{i,j-1}^n - 4U_{i,j}^n\right) + \mathcal{O}(k^2) \quad \text{for } i,j = 1,2,\ldots,M-1
 \end{align*}
 
-\subsection{Scheme}
+\subsubsection{Scheme}
 
 \paragraph{Susceptible}
 

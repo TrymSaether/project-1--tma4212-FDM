@@ -1,5 +1,5 @@
 % !TeX root = main.tex
-\documentclass[a4paper,10pt]{report}
+\documentclass[a4paper,10pt]{article}
 \usepackage{refs/trymtex}
 \usepackage{csquotes}
 \usepackage[backend=biber]{biblatex}
@@ -24,20 +24,20 @@
     asd...
 \end{abstract}
 
-\chapter{Introduction}
-\chapter{Mathematical Description}
-\chapter{Numerical Methodology}
-\section{Discretization}
-\section{Scheme}
-\section{Error Analysis}
-\subsection{Stability}
-\subsection{Consistency}
-\subsection{Stability + Consistency = Convergence}
-\section{Implementation}
-\chapter{Numerical Results}
-\section{Experiments and Results}
-\section{Discussion}
-\chapter{Conclusion}
+\section{Introduction}
+\section{Mathematical Description}
+\section{Numerical Methodology}
+\subsection{Discretization}
+\subsection{Scheme}
+\subsection{Error Analysis}
+\subsubsection{Stability}
+\subsubsection{Consistency}
+\subsubsection{Stability + Consistency = Convergence}
+\subsection{Implementation}
+\section{Numerical Results}
+\subsection{Experiments and Results}
+\subsection{Discussion}
+\section{Conclusion}
 
 \include{sections/problem_description}
 \include{sections/theory}
@@ -46,7 +46,7 @@
 \printbibliography
 
 \appendix
-\section{Appendix: Python Code}
+\subsection{Appendix: Python Code}
 \inputminted{python}{code/code.py}
 \inputminted{python}{code/application.py}
 
