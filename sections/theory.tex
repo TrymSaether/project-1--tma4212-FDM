@@ -311,15 +311,29 @@ The Von Neumann stability analysis is a method to determine the stability of a f
     \xi                     & = \tfrac{\xi^{n+1}}{\xi^n} = -\dfrac{\alpha^2 + 2(\alpha + 1) (\sigma + 1)}{2 (\sigma - 1)} \tag{Source: Trust me bro}
   \end{align*}
   Furthermore, we can now find a bound for the amplification factor:
+  \paragraph{Condition 1}
   \begin{align*}
     \norm*{\xi}                                    & = \norm*{-\dfrac{\alpha^2 + 2(\alpha + 1)(\sigma + 1)}{2(\sigma - 1)}} \leq \dfrac{\alpha^2}{2\underbrace{\abs*{\sigma - 1}}_{\geq 1}} + \dfrac{(\alpha + 1)\overbrace{\abs*{\sigma + 1}}^{\leq 1}}{2\underbrace{\abs{\sigma - 1}}_{\geq 1}} \leq \dfrac{\alpha^2+ \alpha + 1}{2} \leq 1 \\
+    \alpha^2 + \alpha + 1                          & \leq 2 + 2\mu k \implies \alpha^2 + \alpha - 1 - 2\mu k \leq 0                                                                                                                                                                                                                           \\
     \tfrac{1}{2}\left(\alpha^2 + \alpha - 1\right) & \leq 0 \Rightarrow \alpha_{1,2} = \tfrac{1}{2}\left(-1 \pm \sqrt{5}\right) \approx -1.618, 0.618 \Rightarrow \alpha \leq 0.618                                                                                                                                                           \\
     \norm*{\xi}                                    & \leq 1 \implies \alpha \leq 0.618 \text{ and } \sigma = \frac{\mu k}{h^2}(\cos\beta - 1) \leq 0 \tag{Stability}
-  \end{align*}\qed
+  \end{align*}
+
+  \paragraph{Condition 2}
+  \begin{align*}
+    \norm*{\xi} &= \frac{(ka)^2 + (ka) + 1}{2} \leq 1 + \mu k\\
+    a^2 k^2 + (a - 2\mu) k - 1 &\leq 0 \quad \implies \quad k_{1,2} = \frac{-(a - 2\mu) \pm \overbrace{\sqrt{(a - 2\mu)^2 + 4a^2}}^{\geq 0}}{2a^2} \\
+  \end{align*}
 \end{proof}
 
 \paragraph{\color{red} Is the method unconditionally stable?}
 
 \paragraph{\color{red} What can be said about the global error?}
+
+\begin{align*}
+  \mathcal{L}_h U_m^{n+1} & = U_m^\star + \tfrac{ka}{2} \left( U_m^\star - U_m^n \right)                                                                                                                                 \\
+                          & = \left(U_m^n + \frac{r}{2} \left( \delta_x^2 U_m^{n+\phi} + \delta_x^2 U_m^n \right) + k a U_m^n\right) + \tfrac{ka}{2} \left( U_m^{n+\phi} - U_m^n \right)                                 \\
+                          & = u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n + \tfrac{k^3}{6}\partial_t^3 u_m^n + \tfrac{ark}{2}\,h^2\,\partial_{xx} u_m^n + \tfrac{a^2k^2}{2}u_m^n + \mathcal{O}(k^4+h^4)
+\end{align*}
 
 \section{\color{red} Numerical Experiments}

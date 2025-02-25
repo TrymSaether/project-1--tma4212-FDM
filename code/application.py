@@ -5,37 +5,40 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy.sparse import coo_matrix, csr_matrix
 
 
-def build_laplacian_2d_neumann_like(Mx, My, dx, dy):
-    """Build 2D Laplacian matrix with frozen boundaries"""
+def _build_laplacian(Mx, My, dx, dy):
+    """Construct the 2D Laplacian matrix with frozen boundary conditions.
+    
+    This function builds a Laplacian using a 5-point stencil on a grid of size (Mx+1) x (My+1),
+    with Neumann-like (frozen) conditions at the boundaries.
+    """
     Nx = (Mx + 1) * (My + 1)
-    idx = lambda i, j: i * (My + 1) + j
-    cx, cy = 1 / dx**2, 1 / dy**2
+    
+    def flatten(i, j):
+        return i * (My + 1) + j
 
-    rows, cols, vals = [], [], []
+    cx = 1.0 / dx**2
+    cy = 1.0 / dy**2
+
+    rw, cl, data = [], [], []
     for i in range(Mx + 1):
         for j in range(My + 1):
-            r = idx(i, j)
+            cur = flatten(i, j)
+            # Frozen boundary: set row to zeros
             if i == 0 or i == Mx or j == 0 or j == My:
-                rows.append(r)
-                cols.append(r)
-                vals.append(0.0)
+                rw.append(cur)
+                cl.append(cur)
+                data.append(0.0)
             else:
                 # Center point
-                rows.append(r)
-                cols.append(r)
-                vals.append(-2 * (cx + cy))
-                # Adjacent points
-                for ii, jj, v in [
-                    (i - 1, j, cx),
-                    (i + 1, j, cx),
-                    (i, j - 1, cy),
-                    (i, j + 1, cy),
-                ]:
-                    rows.append(r)
-                    cols.append(idx(ii, jj))
-                    vals.append(v)
-
-    return coo_matrix((vals, (rows, cols)), shape=(Nx, Nx)).tocsr()
+                rw.append(cur)
+                cl.append(cur)
+                data.append(-2 * (cx + cy))
+                # Adjacent points contributions
+                for di, dj, coeff in [(-1, 0, cx), (1, 0, cx), (0, -1, cy), (0, 1, cy)]:
+                    rw.append(cur)
+                    cl.append(flatten(i + di, j + dj))
+                    data.append(coeff)
+    return coo_matrix((data, (rw, cl)), shape=(Nx, Nx)).tocsr()
 
 
 def simulate_sir_diffusion_2d_fast(
@@ -53,18 +56,12 @@ def simulate_sir_diffusion_2d_fast(
     T=0.5,
     snapshot_stride=50,
 ):
-    """
-    SIR-diffusion simulation using:
-      - Flattened 2D arrays (1D vectors)
-      - Sparse Laplacian matrix for diffusion
-      - Vectorized updates
-    """
     dx = (x1 - x0) / Mx
     dy = (y1 - y0) / My
     Nx = (Mx + 1) * (My + 1)
     Nsteps = int(T / dt)
 
-    L = build_laplacian_2d_neumann_like(Mx, My, dx, dy)
+    L = _build_laplacian(Mx, My, dx, dy)
     
     def idx(i, j):
         return i * (My + 1) + j
@@ -102,10 +99,8 @@ def simulate_sir_diffusion_2d_fast(
             if i == 0 or i == Mx or j == 0 or j == My:
                 S[k] = 0.0
                 I[k] = 0.0
-
-    
+                
     S_list, I_list, times = [], [], []
-    
     
     for n in range(Nsteps + 1):
         if n % snapshot_stride == 0:
@@ -129,18 +124,14 @@ def simulate_sir_diffusion_2d_fast(
     return S_list, I_list, times, (Mx, My)
 
     
-Mx = 3
-My = 3
-dt = 0.01
+Mx = 50
+My = 50
+dt = 0.001
 T = 30
 beta = 3.0
-gamma = 1
-muS = 0.01
-muI = 0.01
-L = build_laplacian_2d_neumann_like(Mx, My, 1.0, 1.0)
-# print L 
-print(L.todense())
-
+gamma = 0.50
+muS = 0.001
+muI = 0.001
 
 
 # 1) Run the simulation
@@ -173,8 +164,6 @@ ax.set_zlabel("$I$")
 I_2d = I_list[0].reshape((Mx + 1, My + 1))
 surf = ax.plot_surface(X, Y, I_2d, cmap="plasma", edgecolor="none")
 ax.set_title(f"Infected, t={times[0]:.3f}")
-cb = fig.colorbar(surf, ax=ax, shrink=0.5, aspect=5, pad=0.1, label="Infected fraction")
-
 
 current_surf = [surf]
 
