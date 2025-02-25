@@ -89,8 +89,8 @@ Each grid point is denoted by \((x_m, t_n)\), where \(x_m = m h\) and \(t_n = n 
 
 \begin{minipage}[l]{0.45\textwidth}
   \begin{align*}
-    U_m^n      & \approx u(x_m, t_n) \quad \text{for } (x_m, t_n) \in \mathbb{G} \\[2em]
-    \mathbb{G} & := \left\{ (x_m, t_n):\,
+    U_m^n      & \approx u(x_m, t_n) \quad \text{for } (x_m, t_n) \in \mathbb{G} \\[1em]
+    \mathbb{G} & := \left\{(x_m, t_n):\,
     \begin{cases}
       x_m = m h & h = L/M,\; m = 0, \ldots, M \\
       t_n = n k & k = T/N,\; n = 0, \ldots, N
@@ -144,6 +144,7 @@ Each grid point is denoted by \((x_m, t_n)\), where \(x_m = m h\) and \(t_n = n 
 \section{Finite Difference Schemes}
 Finite difference methods approximate differential equations by replacing them with a system of algebraic equations on the chosen grid.
 The heat equation is often solved with these methods for their simplicity and computational efficiency.
+
 \paragraph{The Forward-Time Central-Space (FTCS) scheme}
 FTSC is a simple and widely used method for solving the heat equation.
 It approximates the time derivative with a forward difference and the spatial derivative with a central difference.
@@ -169,7 +170,7 @@ Given the function \(f(u) = au\) for constant \(a\), we first want to analyze th
 The local truncation error (LTE) is the error at a single grid point when approximating a differential equation with a finite difference scheme.
 It is the difference between the exact solution \(u(x_m, t_n)\) and the numerical approximation \(U_m^n\).
 
-\begin{theorem}{Local truncation error for Crank-Nicolson}{thm:lte_cn}
+\begin{theorem}{Local truncation error for Crank-Nicolson}{lte_cn}
   Consider the heat equation with linear reaction term \(f(u) = au\) for constant \(a\), discretized using the Crank-Nicolson scheme. Let \(u_m^n = u(x_m,t_n)\) denote the exact solution at grid points and \(u_m^\star = u(x_m, t_n + \Phi k)\) for \(\Phi \in [0,1]\) be an intermediate solution.
 
   The local truncation error \(\tau_m^n = \norm{u(x_m, t_n) - U_m^n}\) satisfies
@@ -317,4 +318,8 @@ The Von Neumann stability analysis is a method to determine the stability of a f
   \end{align*}\qed
 \end{proof}
 
+\paragraph{\color{red} Is the method unconditionally stable?}
 
+\paragraph{\color{red} What can be said about the global error?}
+
+\section{\color{red} Numerical Experiments}

@@ -4,7 +4,9 @@ In this project, we will study reaction-diffusion equations. Such equations are 
 \begin{equation}
   u_t = \mu u_{xx} + f(u),
 \end{equation}
-where $\mu$ is some positive constant. We will assume the reaction term $f(u)$ to be nonstiff, in the sense that explicit methods can be used to solve the ODE $u_t = f(u)$. As is well known, time-dependent PDEs with diffusion terms should be solved by implicit methods. Using implicit methods for solving the whole system requires solutions of nonlinear equations for each step, and we would all be happy to avoid that. One option would be to use an implicit method for the diffusion term and an explicit for the reaction.
+
+where $\mu$ is some positive constant. 
+We will assume the reaction term $f(u)$ to be nonstiff, in the sense that explicit methods can be used to solve the ODE $u_t = f(u)$. As is well known, time-dependent PDEs with diffusion terms should be solved by implicit methods. Using implicit methods for solving the whole system requires solutions of nonlinear equations for each step, and we would all be happy to avoid that. One option would be to use an implicit method for the diffusion term and an explicit for the reaction.
 
 We will use constant step sizes $h$ in the $x$-direction, and $k$ in the $t$-direction, so that $x_{m+1} = x_m + h$ and $t_{n+1} = t_n + k$. A scheme based on forward and backward Euler, together with a central difference in space could be
 \begin{align*}
