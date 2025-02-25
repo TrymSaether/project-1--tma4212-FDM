@@ -1,0 +1,20 @@
+\section{Introduction}
+Mathematical models are fundamental in the role of understanding the dynamics of infectious diseases, 
+helping predict the spread of outbreaks, which in turn is an enormous resource for humanity.
+
+The Susceptible-Infected-Removed (SIR) model is a widely used framework for modeling disease transmission within
+a population, modeling interactions between susceptible individuals (S), infected individuals (I), and those who
+have recovered or been removed from the system (R). While the SIR model usually describes temporal disease 
+dynamics at a single location, it does not account for spatial spread. This is a crucial factor in real world,
+where movement and interactions between individuals lead to geographical propagation of infections.
+To that end, the reaction-diffusion extension of the SIR model introduces spatial components, where diffusion 
+terms describe the mobility of susceptible and infected individuals. This leads to a system of partial 
+differential equations making the problem computationally challenging, requiring a fitting numerical method 
+to obtain stable and accurate solutions. We employ a finite difference method (FDM) for spatial discretization 
+and a modified Crank-Nicolson scheme for time integration, where the diffusion terms are treated implicitly 
+while the reaction terms are handled explicitly, balancing stability and accuracy.
+
+Thus the objectives of this report are, firstly, to analyze the numerical properties of the proposed scheme, 
+including consistency and stability. Secondly, to implement and validate the method through numerical experiments,
+comparing theoretical expectations with computed results. And lastly, to investigate the spread of an infectious 
+disease under various initial conditions, diffusion rates, and parameter settings.
