@@ -31,7 +31,11 @@
   u_{m+1}^\star & \approx u_m^n + \left(\Phi k \partial_t u_m^n + h \partial_x u_m^n\right) + \frac{1}{2}\left(\Phi^2 k^2 \partial_t^2 u_m^n + h^2 \partial_x^2 u_m^n\right) + \mathcal{O}(h^3 + k^3) \\
   u_{m-1}^\star & \approx u_m^n + \left(\Phi k \partial_t u_m^n - h \partial_x u_m^n\right) + \frac{1}{2}\left(\Phi^2 k^2 \partial_t^2 u_m^n + h^2 \partial_x^2 u_m^n\right) + \mathcal{O}(h^3 + k^3) \\
 \end{align*}
-
+\subparagraph{Operator Taylor Expansion}
+\begin{align*}
+  \delta_x^2 u_m^n = u_{m+1}^n - 2u_m^n + u_{m-1}^n = h^2\partial_{xx}u_m^n + \mathcal{O}(h^4) \\
+  \delta_x^2 u_m^\star = u_{m+1}^\star - 2u_m^\star + u_{m-1}^\star = h^2\partial_{xx}u_m^n + \mathcal{O}(h^4 + k^4) \\
+\end{align*}
 
 \paragraph{Notation}
 \begin{tabular}{ll}
@@ -90,10 +94,10 @@ Each grid point is denoted by \((x_m, t_n)\), where \(x_m = m h\) and \(t_n = n 
 \begin{minipage}[l]{0.45\textwidth}
   \begin{align*}
     U_m^n      & \approx u(x_m, t_n) \quad \text{for } (x_m, t_n) \in \mathbb{G} \\[1em]
-    \mathbb{G} & := \left\{(x_m, t_n):\,
+    \mathbb{G} & := \left\{(x_m, t_n):
     \begin{cases}
-      x_m = m h & h = L/M,\; m = 0, \ldots, M \\
-      t_n = n k & k = T/N,\; n = 0, \ldots, N
+      x_m = m h & h = L/M, m = 0, \ldots, M \\
+      t_n = n k & k = T/N, n = 0, \ldots, N
     \end{cases}\right\}
   \end{align*}\label{eq:grid_points}
   Where \(L\) is the spatial domain length and \(T\) is the final time.
@@ -184,101 +188,91 @@ It is the difference between the exact solution \(u(x_m, t_n)\) and the numerica
 \end{theorem}
 \begin{proof}[Proof of Theorem~\ref{thm:lte_cn}]
 
-  Denote
-  \[
-    u_m^n = u(x_m, t_n),
-    \;
-    u_m^\star = u\bigl(x_m,\, t_n + \Phi k\bigr), \quad \Phi \in [0, 1] \tag{Exact and intermediate solutions}
-  \]
-
   We will use Taylor expansions around $(x_m, t_n)$ in both space and time~\ref{eq:taylor}.
 
   From central differences, we have
   \[
-    \delta_x^2 u_m^n
-    \;=\; u_{m+1}^n \;-\; 2\,u_m^n \;+\; u_{m-1}^n
-    \;=\; h^2\,\partial_{xx}u_m^n \;+\; \mathcal{O}\bigl(h^4\bigr).
+    \delta_x^2 u_m^n = h^2\partial_{xx}u_m^n + \mathcal{O}(h^4)
   \]
-  Since $u_m^\star = u\bigl(x_m,\ t_n+\Phi k\bigr)$, similar Taylor expansions yield
+  Since $u_m^\star = u(x_m, t_n+\Phi k)$, similar Taylor expansions yield
   \[
     \delta_x^2 u_m^\star
-    \;=\; u_{m+1}^\star \;-\; 2\,u_m^\star \;+\; u_{m-1}^\star
-    \;=\; h^2\,\partial_{xx}u_m^n \;+\; \mathcal{O}\bigl(h^4 + k^4\bigr).
+    = u_{m+1}^\star - 2u_m^\star + u_{m-1}^\star
+    = h^2\partial_{xx}u_m^n + \mathcal{O}\bigl(h^4 + k^4\bigr).
   \]
 
   Substitute these into the Crank--Nicolson half-step:
   \[
     U_m^\star
-    \;=\; U_m^n
-    \;+\; \frac{r}{2}\bigl(\delta_x^2 U_m^\star + \delta_x^2 U_m^n\bigr)
-    \;+\; k\,a\,U_m^n,
+    = U_m^n
+    + \frac{r}{2}\bigl(\delta_x^2 U_m^\star + \delta_x^2 U_m^n\bigr)
+    + kaU_m^n,
     \quad
-    r \;=\; \frac{\mu\,k}{h^2}.
+    r = \frac{\mu k}{h^2}.
   \]
   Matching $U_m^\star$ with the exact solution plus higher-order terms, we get
   \[
     U_m^\star
-    \;=\; u_m^n
-    \;+\; r\,h^2\,\partial_{xx}u_m^n
-    \;+\; k\,a\,u_m^n
-    \;+\; \mathcal{O}\bigl(h^4 + k^4\bigr).
+    = u_m^n
+    + rh^2\partial_{xx}u_m^n
+    + kau_m^n
+    + \mathcal{O}\bigl(h^4 + k^4\bigr).
   \]
 
   Next, we compute the full step using the intermediate solution:
 
   \[
     U_m^{n+1}
-    \;=\; U_m^\star
-    \;+\; \tfrac{k}{2}\,\bigl(a\,U_m^\star - a\,U_m^n\bigr).
+    = U_m^\star
+    + \tfrac{k}{2}\bigl(aU_m^\star - aU_m^n\bigr).
   \]
   Expand $U_m^\star$ in time around $(x_m,t_n)$ and collect terms carefully:
   \[
     U_m^{n+1}
-    \;=\; u_m^n
-    \;+\; k\,\partial_t u_m^n
-    \;+\; \tfrac{k^2}{2}\,\partial_t^2 u_m^n
-    \;+\; \tfrac{k^3}{6}\,\partial_t^3 u_m^n
-    \;+\; \tfrac{a\,r\,k}{2}\,h^2\,\partial_{xx} u_m^n
-    \;+\; \tfrac{a^2\,k^2}{2}\,u_m^n
-    \;+\; \mathcal{O}\bigl(k^4 + h^4\bigr).
+    = u_m^n
+    + k\partial_t u_m^n
+    + \tfrac{k^2}{2}\partial_t^2 u_m^n
+    + \tfrac{k^3}{6}\partial_t^3 u_m^n
+    + \tfrac{ark}{2}h^2\partial_{xx} u_m^n
+    + \tfrac{a^2k^2}{2}u_m^n
+    + \mathcal{O}\bigl(k^4 + h^4\bigr).
   \]
 
-  Since $r\,h^2 = \mu\,k$, the term involving $\partial_{xx} u_m^n$ can be written as
-  $\tfrac{a\,\mu\,k^2}{2}\,\partial_{xx}u_m^n$.
+  Since $rh^2 = \mu k$, the term involving $\partial_{xx} u_m^n$ can be written as
+  $\tfrac{a\mu k^2}{2}\partial_{xx}u_m^n$.
 
   Compare to the exact solution at the next time level:
 
   \[
     u_m^{n+1}
-    \;=\; u_m^n
-    \;+\; k\,\partial_t u_m^n
-    \;+\; \tfrac{k^2}{2}\,\partial_t^2 u_m^n
-    \;+\; \tfrac{k^3}{6}\,\partial_t^3 u_m^n
-    \;+\; \mathcal{O}\bigl(k^4\bigr).
+    = u_m^n
+    + k\partial_t u_m^n
+    + \tfrac{k^2}{2}\partial_t^2 u_m^n
+    + \tfrac{k^3}{6}\partial_t^3 u_m^n
+    + \mathcal{O}\bigl(k^4\bigr).
   \]
 
   Their difference is
   \[
-    U_m^{n+1} \;-\; u_m^{n+1}
-    \;=\;
-    \underbrace{\bigl(\tfrac{a\,\mu\,k^2}{2}\,\partial_{xx}u_m^n
-      + \tfrac{a^2\,k^2}{2}\,u_m^n\bigr)}_{\mathcal{O}(k^2)}
-    \;+\; \mathcal{O}\bigl(k^3 + h^4\bigr)
-    \;=\; \mathcal{O}\bigl(k^2 + h^4\bigr).
+    U_m^{n+1} - u_m^{n+1} =
+    \underbrace{\left(\tfrac{a\mu k^2}{2}\partial_{xx}u_m^n
+      + \tfrac{a^2k^2}{2}u_m^n\right)}_{\mathcal{O}(k^2)}
+    + \mathcal{O}\left(k^3 + h^4\right)
+    = \mathcal{O}\left(k^2 + h^4\right).
   \]
   Thus, the local truncation error (per time step) is
   \[
     \lVert{\tau_m^n}\rVert
-    \;=\; \left\lVert\dfrac{1}{k}\left(U_m^{n+1} - u_m^{n+1}\right) \right\rVert
-    \;=\; \mathcal{O}\bigl(k + \tfrac{h^4}{k}\bigr).
+    = \left\lVert\dfrac{1}{k}\left(U_m^{n+1} - u_m^{n+1}\right) \right\rVert
+    = \mathcal{O}\bigl(k + \tfrac{h^4}{k}\bigr).
   \]
   If we choose $k \sim h^2$, then
   \[
-    \frac{h^4}{k} \;\sim\; h^2,
+    \frac{h^4}{k} \sim h^2,
     \quad
     \Rightarrow
     \quad
-    \lVert{\tau_m^n}\rVert \;\approx\; \mathcal{O}\bigl(k^2 + h^2\bigr).
+    \lVert{\tau_m^n}\rVert \approx \mathcal{O}\bigl(k^2 + h^2\bigr).
   \]
   Therefore, under the usual choice $k \propto h^2$, the scheme is second-order accurate in both time and space. \qed
 \end{proof}
@@ -311,18 +305,10 @@ The Von Neumann stability analysis is a method to determine the stability of a f
     \xi                     & = \tfrac{\xi^{n+1}}{\xi^n} = -\dfrac{\alpha^2 + 2(\alpha + 1) (\sigma + 1)}{2 (\sigma - 1)} \tag{Source: Trust me bro}
   \end{align*}
   Furthermore, we can now find a bound for the amplification factor:
-  \paragraph{Condition 1}
   \begin{align*}
-    \norm*{\xi}                                    & = \norm*{-\dfrac{\alpha^2 + 2(\alpha + 1)(\sigma + 1)}{2(\sigma - 1)}} \leq \dfrac{\alpha^2}{2\underbrace{\abs*{\sigma - 1}}_{\geq 1}} + \dfrac{(\alpha + 1)\overbrace{\abs*{\sigma + 1}}^{\leq 1}}{2\underbrace{\abs{\sigma - 1}}_{\geq 1}} \leq \dfrac{\alpha^2+ \alpha + 1}{2} \leq 1 \\
-    \alpha^2 + \alpha + 1                          & \leq 2 + 2\mu k \implies \alpha^2 + \alpha - 1 - 2\mu k \leq 0                                                                                                                                                                                                                           \\
+    \norm*{\xi}                                    & = \norm*{-\dfrac{\alpha^2 + 2(\alpha + 1)(\sigma + 1)}{2(\sigma - 1)}} \leq \dfrac{\alpha^2}{2\underbrace{\abs*{\sigma - 1}}_{\geq 1}} + \dfrac{(\alpha + 1)\overbrace{\abs*{\sigma + 1}}^{\leq 1}}{2\underbrace{\abs{\sigma - 1}}_{\geq 1}} \leq \dfrac{\alpha^2+ \alpha + 1}{2} \leq 1 \\                                                                                                                                                                                                                     \\
     \tfrac{1}{2}\left(\alpha^2 + \alpha - 1\right) & \leq 0 \Rightarrow \alpha_{1,2} = \tfrac{1}{2}\left(-1 \pm \sqrt{5}\right) \approx -1.618, 0.618 \Rightarrow \alpha \leq 0.618                                                                                                                                                           \\
     \norm*{\xi}                                    & \leq 1 \implies \alpha \leq 0.618 \text{ and } \sigma = \frac{\mu k}{h^2}(\cos\beta - 1) \leq 0 \tag{Stability}
-  \end{align*}
-
-  \paragraph{Condition 2}
-  \begin{align*}
-    \norm*{\xi} &= \frac{(ka)^2 + (ka) + 1}{2} \leq 1 + \mu k\\
-    a^2 k^2 + (a - 2\mu) k - 1 &\leq 0 \quad \implies \quad k_{1,2} = \frac{-(a - 2\mu) \pm \overbrace{\sqrt{(a - 2\mu)^2 + 4a^2}}^{\geq 0}}{2a^2} \\
   \end{align*}
 \end{proof}
 
@@ -333,7 +319,7 @@ The Von Neumann stability analysis is a method to determine the stability of a f
 \begin{align*}
   \mathcal{L}_h U_m^{n+1} & = U_m^\star + \tfrac{ka}{2} \left( U_m^\star - U_m^n \right)                                                                                                                                 \\
                           & = \left(U_m^n + \frac{r}{2} \left( \delta_x^2 U_m^{n+\phi} + \delta_x^2 U_m^n \right) + k a U_m^n\right) + \tfrac{ka}{2} \left( U_m^{n+\phi} - U_m^n \right)                                 \\
-                          & = u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n + \tfrac{k^3}{6}\partial_t^3 u_m^n + \tfrac{ark}{2}\,h^2\,\partial_{xx} u_m^n + \tfrac{a^2k^2}{2}u_m^n + \mathcal{O}(k^4+h^4)
+                          & = u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n + \tfrac{k^3}{6}\partial_t^3 u_m^n + \tfrac{ark}{2}h^2\partial_{xx} u_m^n + \tfrac{a^2k^2}{2}u_m^n + \mathcal{O}(k^4+h^4)
 \end{align*}
 
 \section{\color{red} Numerical Experiments}

@@ -1,13 +1,13 @@
 \begin{remark}{Boundary Conditions}{}
-    The boundary condition $g(x, t)$ is often given as a Dirichlet or Neumann condition, which specifies the temperature or heat flux at the boundary.
+  The boundary condition $g(x, t)$ is often given as a Dirichlet or Neumann condition, which specifies the temperature or heat flux at the boundary.
 \end{remark}
 
 \begin{remark}{Diffusion Term}{}
-    The diffusion term $\mu \frac{\partial^2 u}{\partial x^2}$ describes how heat spreads through the material.
+  The diffusion term $\mu \frac{\partial^2 u}{\partial x^2}$ describes how heat spreads through the material.
 \end{remark}
 
 \begin{remark}{Reaction Term}{}
-    The reaction term $f(u)$ accounts for any heat sources or sinks in the system.
+  The reaction term $f(u)$ accounts for any heat sources or sinks in the system.
 \end{remark}
 
 
@@ -19,6 +19,7 @@ We denote the exact, and intermediate PDE solution by
 \[
   u_m^n = u(x_m, t_n), \quad u_m^\star = u(x_m, t_n + \Phi k)
 \]
+
 Where \(\Phi \in [0, 1]\) is a parameter that interpolates between the time levels \(t_n\) and \(t_{n+1}\).
 
 We want to find the local truncation error (LTE) of the Crank-Nicolson scheme, which is the error at a single grid point when approximating the PDE with the finite difference scheme.
@@ -55,49 +56,37 @@ Then we substitute these expansions into the Crank-Nicolson scheme to analyze th
 By substituting the expansions into the Crank-Nicolson scheme, we can analyze the local truncation error (LTE) of the scheme.
 
 \begin{align*}
-  U_m^{n+1} & = U_m^\star + \tfrac{k}{2} \Bigl( a\,U_m^\star - a\,U_m^n \Bigr)                                                                            \\[1mm]
-            & = \Bigl[ u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4) \Bigr]    \\
-            & \quad {}+ \tfrac{k\,a}{2}\Bigl\{ \Bigl[ u_m^n + r\,h^2\,\partial_{xx} u_m^n + k\,a\,u_m^n
-  + \mathcal{O}(h^4+k^2) \Bigr] - u_m^n \Bigr\}                                                                                                           \\[1mm]
-            & = u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n
-  + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4) + \tfrac{k\,a}{2}\Bigl( r\,h^2\,\partial_{xx} u_m^n + k\,a\,u_m^n \Bigr) + \mathcal{O}(h^4+k^4) \\[1mm]
-            & = u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n
-  + \tfrac{k^3}{6}\,\partial_t^3 u_m^n
-  + \tfrac{a\,r\,k}{2}\,h^2\,\partial_{xx} u_m^n + \tfrac{a^2\,k^2}{2}\,u_m^n
+  U_m^{n+1} & = U_m^\star + \tfrac{k}{2} \Bigl( aU_m^\star - aU_m^n \Bigr)                                                                                                                                               \\
+            & = \left[ u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n + \tfrac{k^3}{6}\partial_t^3 u_m^n + \mathcal{O}(k^4) \right]                                                                      \\
+            & \quad {}+ \tfrac{ka}{2}\left[\left( u_m^n + rh^2\partial_{xx} u_m^n + kau_m^n + \mathcal{O}(h^4+k^2) \right) - u_m^n \right]                                                                               \\
+            & = u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n + \tfrac{k^3}{6}\partial_t^3 u_m^n + \mathcal{O}(k^4) + \tfrac{ka}{2}\Bigl( rh^2\partial_{xx} u_m^n + kau_m^n \Bigr) + \mathcal{O}(h^4+k^4) \\
+            & = u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n
+  + \tfrac{k^3}{6}\partial_t^3 u_m^n
+  + \tfrac{ark}{2}h^2\partial_{xx} u_m^n + \tfrac{a^2k^2}{2}u_m^n
   + \mathcal{O}(k^4+h^4)
-\end{align*}
-
-Using \(r=\frac{\mu k}{h^2}\) so that \(r\,h^2=\mu k\), we rewrite the above as
-\begin{align*}
-  U_m^{n+1} & = u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n
-  + \tfrac{k^3}{6}\,\partial_t^3 u_m^n
-  + \tfrac{a\,\mu\,k^2}{2}\,\partial_{xx} u_m^n + \tfrac{a^2\,k^2}{2}\,u_m^n
-  + \mathcal{O}(k^4+h^4).
 \end{align*}
 
 The left-hand side of the scheme is the exact solution at the next time level:
 \begin{align*}
-  u_m^{n+1}
-   & = u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n
-  + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4).
+  u_m^{n+1} & = u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n + \tfrac{k^3}{6}\partial_t^3 u_m^n + \mathcal{O}(k^4).
 \end{align*}
 
 The local truncation error (LTE) is the difference between the exact solution and the numerical approximation:
 
 \begin{align*}
-  U_m^{n+1} - u_m^{n+1} & =
-  \left[ u_m^n + k\,\partial_t u_m^n + \tfrac{k^2}{2}\,\partial_t^2 u_m^n + \tfrac{k^3}{6}\,\partial_t^3 u_m^n + \mathcal{O}(k^4) \right]                                                            \\
-                        & - \left[ u_m^n + k\,\mu\,\partial_{x}^2 u_m^n + k\,a\,u_m^n + \tfrac{a\,\mu\,k^2}{2}\,\partial_{x}^2 u_m^n + \tfrac{a^2\,k^2}{2}\,u_m^n \right] + \mathcal{O}(k^4+h^4)     \\
-                        & = k^2 \left[\tfrac{1}{2}\partial_t^2 u_m^n - \tfrac{a \,\mu}{2}\partial_{x}^2 u_m^n - \tfrac{a^2}{2}u_m^n\right] + \tfrac{k^3}{6}\partial_t^3 u_m^n + \mathcal{O}(k^4+h^4) \\
-                        & = \mathcal{O}(k^2 + h^4)                                                                                                                                                   \\[2mm]
-  \norm{\tau_m^n}       & = \norm{\frac{U_m^{n+1} - u_m^{n+1}}{k}} = \mathcal{O}(k + \frac{h^4}{k})                                                                                                  \\
+  \abs*{\tau_m^{n+1}} & = \abs*{\dfrac{u_m^{n+1} - u_m^n}{k} - \dfrac{U_m^{n+1} - U_m^n}{k}} \\
+                      & = \left[ u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n + \tfrac{k^3}{6}\partial_t^3 u_m^n + \mathcal{O}(k^4) \right]                                      \\
+                      & - \left[ u_m^n + k\mu\partial_{x}^2 u_m^n + kau_m^n + \tfrac{a\mu k^2}{2}\partial_{x}^2 u_m^n + \tfrac{a^2k^2}{2}u_m^n \right] + \mathcal{O}(k^4+h^4)                    \\
+                      & = k^2 \left[\tfrac{1}{2}\partial_t^2 u_m^n - \tfrac{a \mu}{2}\partial_{x}^2 u_m^n - \tfrac{a^2}{2}u_m^n\right] + \tfrac{k^3}{6}\partial_t^3 u_m^n + \mathcal{O}(k^4+h^4) \\
+                      & = \mathcal{O}(k^2 + h^4)                                                                                                                                                 \\
+  \norm{\tau_m^n}     & = \norm{\frac{U_m^{n+1} - u_m^{n+1}}{k}} = \mathcal{O}(k + \frac{h^4}{k})                                                                                                \\
 \end{align*}
 
 If we choose time step \(k\) such that \(k \sim h^2\) is of similar order as the spatial step, then the LTE is a second-order error in both time and space:
 
-\begin{equation}
+\[
   \norm{\tau_m^n} = \mathcal{O}(k + \frac{h^4}{k}) \approx \mathcal{O}(k^2 + h^2) \quad \text{where} \quad k \sim h^2
-\end{equation}
+\]
 
 
 
@@ -136,102 +125,105 @@ For a fixed time step \(n\), we can write the system of equations as
 The first matrix \(A_{11}\) is:
 \small
 \begin{align*}
-    A_{11} &= \scriptscriptstyle
-    \begin{bmatrix}
-        1 - \beta S_{1,1}^n - \tfrac{4\mu_S}{h^2} & \tfrac{\mu_S}{h^2} & 0 & \tfrac{\mu_S}{h^2} & 0 & \cdots & 0 \\
-        \tfrac{\mu_S}{h^2} & 1 - \beta S_{1,2}^n - \tfrac{4\mu_S}{h^2} & \tfrac{\mu_S}{h^2} & 0 & \tfrac{\mu_S}{h^2} & \cdots & 0 \\
-        0 & \frac{\mu_S}{h^2} & 1 - \beta S_{1,3}^n - \tfrac{4\mu_S}{h^2} & 0 & 0 & \cdots & 0 \\
-        \tfrac{\mu_S}{h^2} & 0 & 0 & 1 - \beta S_{2,1}^n - \tfrac{4\mu_S}{h^2} & \tfrac{\mu_S}{h^2} & \cdots & 0 \\
-        \vdots & \vdots & \vdots & \vdots & \ddots & \ddots & \vdots \\
-        0 & 0 & 0 & 0 & \cdots & 1 - \beta S_{M-1,M-1}^n - \tfrac{4\mu_S}{h^2} & 0
-    \end{bmatrix}
+  A_{11} & = \scriptscriptstyle
+  \begin{bmatrix}
+    1 - \beta S_{1,1}^n - \tfrac{4\mu_S}{h^2} & \tfrac{\mu_S}{h^2}                        & 0                                         & \tfrac{\mu_S}{h^2}                        & 0                  & \cdots                                        & 0      \\
+    \tfrac{\mu_S}{h^2}                        & 1 - \beta S_{1,2}^n - \tfrac{4\mu_S}{h^2} & \tfrac{\mu_S}{h^2}                        & 0                                         & \tfrac{\mu_S}{h^2} & \cdots                                        & 0      \\
+    0                                         & \frac{\mu_S}{h^2}                         & 1 - \beta S_{1,3}^n - \tfrac{4\mu_S}{h^2} & 0                                         & 0                  & \cdots                                        & 0      \\
+    \tfrac{\mu_S}{h^2}                        & 0                                         & 0                                         & 1 - \beta S_{2,1}^n - \tfrac{4\mu_S}{h^2} & \tfrac{\mu_S}{h^2} & \cdots                                        & 0      \\
+    \vdots                                    & \vdots                                    & \vdots                                    & \vdots                                    & \ddots             & \ddots                                        & \vdots \\
+    0                                         & 0                                         & 0                                         & 0                                         & \cdots             & 1 - \beta S_{M-1,M-1}^n - \tfrac{4\mu_S}{h^2} & 0
+  \end{bmatrix}
 \end{align*}
 
 The second matrix \(A_{22}\) is:
 \begin{align*}
-    A_{22} &= \scriptscriptstyle
-        \begin{bmatrix}
-            1 + \beta S_{1,1}^n - \gamma - \tfrac{4\mu_I}{h^2} & \tfrac{\mu_I}{h^2} & 0 & \tfrac{\mu_I}{h^2} & 0 & \cdots & 0 \\
-            \tfrac{\mu_I}{h^2} & 1 + \beta S_{1,2}^n - \gamma - \tfrac{4\mu_I}{h^2} & \tfrac{\mu_I}{h^2} & 0 & \tfrac{\mu_I}{h^2} & \cdots & 0 \\
-            0 & \tfrac{\mu_I}{h^2} & 1 + \beta S_{1,3}^n - \gamma - \tfrac{4\mu_I}{h^2} & 0 & 0 & \cdots & 0 \\
-            \tfrac{\mu_I}{h^2} & 0 & 0 & 1 + \beta S_{2,1}^n - \gamma - \tfrac{4\mu_I}{h^2} & \tfrac{\mu_I}{h^2} & \cdots & 0 \\
-            \vdots & \vdots & \vdots & \vdots & \ddots & \ddots & \vdots \\
-            0 & 0 & 0 & 0 & \cdots & 1 + \beta S_{M-1}^n - \gamma - \tfrac{4\mu_I}{h^2}
-        \end{bmatrix}
+  A_{22} & = \scriptscriptstyle
+  \begin{bmatrix}
+    1 + \beta S_{1,1}^n - \gamma - \tfrac{4\mu_I}{h^2} & \tfrac{\mu_I}{h^2}                                 & 0                                                  & \tfrac{\mu_I}{h^2}                                 & 0                  & \cdots                                             & 0      \\
+    \tfrac{\mu_I}{h^2}                                 & 1 + \beta S_{1,2}^n - \gamma - \tfrac{4\mu_I}{h^2} & \tfrac{\mu_I}{h^2}                                 & 0                                                  & \tfrac{\mu_I}{h^2} & \cdots                                             & 0      \\
+    0                                                  & \tfrac{\mu_I}{h^2}                                 & 1 + \beta S_{1,3}^n - \gamma - \tfrac{4\mu_I}{h^2} & 0                                                  & 0                  & \cdots                                             & 0      \\
+    \tfrac{\mu_I}{h^2}                                 & 0                                                  & 0                                                  & 1 + \beta S_{2,1}^n - \gamma - \tfrac{4\mu_I}{h^2} & \tfrac{\mu_I}{h^2} & \cdots                                             & 0      \\
+    \vdots                                             & \vdots                                             & \vdots                                             & \vdots                                             & \ddots             & \ddots                                             & \vdots \\
+    0                                                  & 0                                                  & 0                                                  & 0                                                  & \cdots             & 1 + \beta S_{M-1}^n - \gamma - \tfrac{4\mu_I}{h^2}
+  \end{bmatrix}
 \end{align*}
 
 The matrices \(A_{12}\) and \(A_{21}\) are both zero matrices:
 \begin{align*}
-    A_{12} = A_{21} &=
-    \begin{bmatrix}
-        0 & 0 & 0 & \cdots & 0 \\
-        0 & 0 & 0 & \cdots & 0 \\
-        \vdots & \vdots & \vdots & \ddots & \vdots \\
-        0 & 0 & 0 & \cdots & 0
-    \end{bmatrix}
+  A_{12} = A_{21} & =
+  \begin{bmatrix}
+    0      & 0      & 0      & \cdots & 0      \\
+    0      & 0      & 0      & \cdots & 0      \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    0      & 0      & 0      & \cdots & 0
+  \end{bmatrix}
 \end{align*}
 \begin{tikzpicture}[
-    auto matrix/.style={
-    matrix of nodes,
-    draw, thick,
-    inner sep=0pt,
-    nodes in empty cells,
-    column sep=-0.2pt,
-    row sep=-0.2pt,
-    cells={
-    nodes={
-    minimum width=2em,
-    minimum height=2em,
-    draw,
-    very thin,
-    anchor=center,
-    fill=white,
-    execute at begin node={%
-    $\vphantom{x_1^1}
-        \pgfmathtruncatemacro{\itest}{sign(4-\the\pgfmatrixcurrentcolumn)*sign(4-\the\pgfmatrixcurrentrow)}
-        \unless\ifnum\itest=0
-        {#1}^{\myrowindex{\the\pgfmatrixcurrentrow}}_{\mycolindex{\the\pgfmatrixcurrentcolumn}}
-        \fi
-        \ifnum\the\pgfmatrixcurrentrow\the\pgfmatrixcurrentcolumn=14 \cdots\fi
-        \ifnum\the\pgfmatrixcurrentrow\the\pgfmatrixcurrentcolumn=41 \vdots\fi
-        \ifnum\the\pgfmatrixcurrentrow\the\pgfmatrixcurrentcolumn=44 \ddots\fi
-    $
-    }
-    }
-    }
-    }
-    ]
-    % Helper commands
-    \newcommand{\mycolindex}[1]{\ifnum#1=5 M\else #1\fi}
-    \newcommand{\myrowindex}[1]{\ifnum#1=5 N\else #1\fi}
+  auto matrix/.style={
+  matrix of nodes,
+  draw, thick,
+  inner sep=0pt,
+  nodes in empty cells,
+  column sep=-0.2pt,
+  row sep=-0.2pt,
+  cells={
+  nodes={
+  minimum width=2em,
+  minimum height=2em,
+  draw,
+  very thin,
+  anchor=center,
+  fill=white,
+  execute at begin node={%
+  $\vphantom{x_1^1}
+    \pgfmathtruncatemacro{\itest}{sign(4-\the\pgfmatrixcurrentcolumn)*sign(4-\the\pgfmatrixcurrentrow)}
+    \unless\ifnum\itest=0
+    {#1}^{\myrowindex{\the\pgfmatrixcurrentrow}}_{\mycolindex{\the\pgfmatrixcurrentcolumn}}
+    \fi
+    \ifnum\the\pgfmatrixcurrentrow\the\pgfmatrixcurrentcolumn=14 \cdots\fi
+    \ifnum\the\pgfmatrixcurrentrow\the\pgfmatrixcurrentcolumn=41 \vdots\fi
+    \ifnum\the\pgfmatrixcurrentrow\the\pgfmatrixcurrentcolumn=44 \ddots\fi
+  $}}}}]
+  % Helper commands
+  \newcommand{\mycolindex}[1]{\ifnum#1=5 M\else #1\fi}
+  \newcommand{\myrowindex}[1]{\ifnum#1=5 N\else #1\fi}
 
-    % Matrices for Susceptible population
-    \matrix[auto matrix=S,xshift=5em,yshift=5em](matS){
-         &  &  &  & \\
-         &  &  &  & \\
-         &  &  &  & \\
-         &  &  &  & \\
-         &  &  &  & \\
-    };
+  % Matrices for Susceptible population
+  \matrix[auto matrix=S,xshift=5em,yshift=5em](matS){
+     &  &  &  & \\
+     &  &  &  & \\
+     &  &  &  & \\
+     &  &  &  & \\
+     &  &  &  & \\
+  };
 
-    % Matrices for Infected population
-    \matrix[auto matrix=I,xshift=-10em,yshift=0em](matI){
-         &  &  &  & \\
-         &  &  &  & \\
-         &  &  &  & \\
-         &  &  &  & \\
-         &  &  &  & \\
-    };
+  % Matrices for Infected population
+  \matrix[auto matrix=I,xshift=-10em,yshift=0em](matI){
+     &  &  &  & \\
+     &  &  &  & \\
+     &  &  &  & \\
+     &  &  &  & \\
+     &  &  &  & \\
+  };
 
-    % Arrows and labels
-    \draw[thick,-stealth] ([xshift=0, yshift=-2ex]matS.south east) -- ([xshift=-28ex,yshift=-5em]matS.south east)
-    node[midway,right] {$y$};
-    \draw[thick,-stealth] ([yshift=-1ex]matS.south west) -- ([yshift=-1ex]matS.south east)
-    node[midway,below] {$x$};
-    \draw[thick,-stealth] ([xshift=-1ex]matS.north west) -- ([xshift=-1ex]matS.south west)
-    node[midway,left] {$t$};
+  % Arrows and labels
+  \draw[thick,-stealth] ([xshift=0, yshift=-2ex]matS.south east) -- ([xshift=-28ex,yshift=-5em]matS.south east)
+  node[midway,right] {$y$};
+  \draw[thick,-stealth] ([yshift=-1ex]matS.south west) -- ([yshift=-1ex]matS.south east)
+  node[midway,below] {$x$};
+  \draw[thick,-stealth] ([xshift=-1ex]matS.north west) -- ([xshift=-1ex]matS.south west)
+  node[midway,left] {$t$};
 
-    % Labels for matrices
-    \node[above] at (matS.north) {Susceptible};
-    \node[above] at (matI.north) {Infected};
+  % Labels for matrices
+  \node[above] at (matS.north) {Susceptible};
+  \node[above] at (matI.north) {Infected};
 \end{tikzpicture}
+
+
+
+\paragraph{Condition 2}
+\begin{align*}
+  \norm*{\xi}                & = \frac{(ka)^2 + (ka) + 1}{2} \leq 1 + \mu k                                                                       \\
+  a^2 k^2 + (a - 2\mu) k - 1 & \leq 0 \quad \implies \quad k_{1,2} = \frac{-(a - 2\mu) \pm \overbrace{\sqrt{(a - 2\mu)^2 + 4a^2}}^{\geq 0}}{2a^2} \\
+\end{align*}
