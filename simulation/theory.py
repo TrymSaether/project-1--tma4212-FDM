@@ -33,7 +33,7 @@ class HeatSolver:
         Args:
             M (int): Number of spatial intervals
             N (int): Number of time steps
-            return_all (bool): Whether to return the solution at all time steps
+            return_all (bool): Whether to return the solution at all time steps or just the final step
             
         Returns:
             ndarray: The numerical solution
@@ -80,7 +80,7 @@ class HeatSolver:
                 for i in range(1, M):
                     b[i-1] = (1 - r) * U[i] + (r/2) * (U[i+1] + U[i-1]) + k * self.a * U[i]
             
-            # Solve the predictor step for U^* (interior points)
+            # Solve the predictor step for U^* (interior points): A U^* = b
             U_star_interior = spsolve(A, b)
             
             # Create full U^* array including boundary points
@@ -120,10 +120,8 @@ class HeatSolver:
         
         for M in M_values:
             if parabolic_scaling:
-                # Use parabolic scaling: k ~ h2
-                N = M**2 // 4  # This ensures k ~ h2
+                N = M**2 
             else:
-                # Fixed time steps
                 N = 1000
             
             error = self.compute_error(M, N)
@@ -197,14 +195,14 @@ class HeatSolver:
 
 def plot_convergence(h_values, errors, title, expected_order=2):
     """Plot convergence results with a reference line for expected order."""
-    plt.figure()
+    plt.figure(figsize=(8, 6), dpi=300)
     
-    plt.loglog(h_values, errors, 'o-', label='Numerical Error')
+    plt.loglog(h_values, -errors, 'o-', label='Numerical Error')
     
     # Add reference line for expected order
     ref_h = np.array([min(h_values), max(h_values)])
     ref_error = errors[0] * (ref_h / h_values[0])**expected_order
-    plt.loglog(ref_h, ref_error, 'k--', label=f'$O(h^{expected_order})$')
+    plt.loglog(ref_h, ref_error, 'k--', label=f'$O(h^{expected_order})$', lw=2)
     
     # Calculate observed convergence order
     observed_order = np.log(errors[-2]/errors[-1]) / np.log(h_values[-2]/h_values[-1])
@@ -345,6 +343,7 @@ def run_validation_tests():
     plt.legend()
     plt.grid(True)
     plt.savefig('./figures/effect_of_reaction_term.png', dpi=300, bbox_inches='tight')
+    
     
     print("\n========== VALIDATION COMPLETE ==========")
     print("All figures saved to disk.")
