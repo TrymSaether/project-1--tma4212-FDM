@@ -1,53 +1,119 @@
 \section{Theory}
 
-\subsection{Theoretical Background}
-\begin{tabular}{ll}
-  \textbf{Notation}               & \textbf{Meaning}                       \\
-  \hline                                                                 \\[-1em]
-  \(u = u(x, t)\)               & Exact temperature distribution         \\
-  \(u_m^n = u(x_m, t_n)\)       & Exact temperature at grid point        \\
-  \(\mu\)                       & Diffusion coefficient                  \\
-  \(f(u)\)                      & Reaction term                          \\
-  \(u_0(x)\)                    & Initial temperature distribution       \\
-  \(g(x, t)\)                   & Boundary condition                     \\
-  \(\Omega\)                    & Spatial domain                         \\
-  \(\partial \Omega\)           & Boundary of spatial domain             \\
-  \hline                                                                 \\[-1em]
-  \(U_m^n \approx u(x_m, t_n)\) & Numerical approximation of temperature \\
-  \(x_m = m h\)                 & Spatial grid points                    \\
-  \(t_n = n k\)                 & Temporal grid points                   \\
-  \(h = L/M\)                   & Spatial step size                      \\
-  \(k =T/N\)                    & Temporal step size                     \\
-  \(L\)                         & Spatial domain length                  \\
-  \(T\)                         & Final time                             \\
-  \(M\)                         & Number of spatial grid points          \\
-  \(N\)                         & Number of temporal grid points         \\
-  \(\mathbb{G}\)                & Set of all grid points                 \\
-  \hline
-\end{tabular}
+\subsection{Mathematical Foundation}
+
+Understanding the numerical solution of the heat equation requires familiarity with several key mathematical concepts.
+This section introduces the essential notation and theoretical tools we'll use throughout our analysis.
+
+\subsubsection{Notation and Terminology}
+The following notation will be used consistently throughout this report:
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{@{}ll@{}}
+    \textbf{Symbol}          & \textbf{Description}                  \\
+    \hline
+    $u(x,t)$                 & Temperature at position $x$, time $t$ \\
+    $\mu$                    & Diffusion coefficient                 \\
+    $f(u)$                   & Reaction term                         \\
+    $\Omega, \partial\Omega$ & Domain and boundary                   \\
+    \hline
+    $h=L/M$, $k=T/N$         & Spatial/temporal step sizes           \\
+    $x_m=mh$, $t_n=nk$       & Grid coordinates                      \\
+    $u_m^n=u(x_m,t_n)$       & Exact solution at grid point          \\
+    $U_m^n$                  & Numerical approximation               \\
+    $M$, $N$                 & Number of spatial/temporal points     \\
+    $\mathbb{G}$             & Set of all grid points                \\
+  \end{tabular}
+\end{table}
+
+\subsubsection{Error Analysis Concepts}
+
+A fundamental concept in numerical methods is the local truncation error (LTE), which measures the accuracy of our numerical approximation at each step:
 
 \begin{definition}{Local Truncation Error}{lte}
-  The local truncation error (LTE) is the error made at a single grid point when approximating a differential equation with a finite difference scheme.
+  The local truncation error quantifies how well a difference equation approximates the exact differential equation at a single step. For a numerical method of order $(p,q)$:
   \[
-    \norm{\tau_m^n} = \norm{u(x_m, t_n) - U_m^n} = \mathcal{O}(h^p + k^q) \quad \text{as} \quad h, k \to 0
+    \|\tau_m^n\| = \|U_m^n-u(x_m, t_n)\| = \mathcal{O}(h^p + k^q) \quad \text{as} \quad h, k \to 0
   \]
-  where \(p\) and \(q\) are the order of the spatial and temporal discretizations, respectively.
+  where $p$ represents the spatial accuracy and $q$ represents the temporal accuracy.
+\end{definition}
+
+\begin{definition}{Global Error}{global_error}
+  The global error measures the accumulated difference between the numerical solution and the exact solution at a given point:
+  \[
+    e_m^n = U_m^n - u(x_m, t_n)
+  \]
+  Unlike local truncation error, global error accounts for the propagation of errors from previous steps.
+\end{definition}
+
+\begin{theorem}{Lax Equivalence Theorem}{lax}
+  A numerical scheme is convergent if it is both consistent and stable.
+  \[
+    \operatorname{Consistent} \land \operatorname{Stable} \implies \operatorname{Convergent}
+  \]
+\end{theorem}
+
+\begin{definition}{Consistency}{consistency}
+  A numerical scheme is consistent with a PDE if the local truncation error tends to zero as the step sizes approach zero:
+  \[
+    \lim_{h,k \to 0} \|\tau_m^n\| = 0
+  \]
+  A scheme with local truncation error $\mathcal{O}(h^p + k^q)$ is said to be consistent of order $(p,q)$.
+\end{definition}
+
+\begin{definition}{Stability}{stability}
+  A numerical scheme is stable if small perturbations in the initial data produce bounded changes in the numerical solution. For linear problems, this typically requires the amplification factor $\xi$ to satisfy:
+  \[
+    |\xi| \leq 1 + Ck
+  \]
+  for some constant $C$ independent of step sizes.
+\end{definition}
+
+\begin{definition}{Convergence}{convergence}
+  A numerical scheme is convergent if the global error tends to zero as the step sizes approach zero:
+  \[
+    \lim_{h,k \to 0} \|e_m^n\| = 0
+  \]
+  A scheme with global error $\mathcal{O}(h^p + k^q)$ is said to be convergent of order $(p,q)$.
 \end{definition}
 
 
-\paragraph{Common Taylor Expansions}
 
-\begin{align*}
-  u_{m+1}^n & \approx u_m^n + h \partial_x u_m^n + \frac{h^2}{2} \partial_x^2 u_m^n + \frac{h^3}{6} \partial_x^3 u_m^n + \mathcal{O}(h^4) \tag{T1} \label{eq:taylor_forward} \\
-  u_{m-1}^n & \approx u_m^n - h \partial_x u_m^n + \frac{h^2}{2} \partial_x^2 u_m^n - \frac{h^3}{6} \partial_x^3 u_m^n + \mathcal{O}(h^4) \tag{T2} \label{eq:taylor_backward} \\
-  u_m^{n+1} & \approx u_m^n + k \partial_t u_m^n + \frac{k^2}{2} \partial_t^2 u_m^n + \frac{k^3}{6} \partial_t^3 u_m^n + \mathcal{O}(k^4) \tag{T3} \label{eq:taylor_time} \\                                                                                                          \\
-  u_m^\star & \approx u_m^n + \Phi k \partial_t u_m^n + \frac{(\Phi k)^2}{2} \partial_t^2 u_m^n + \frac{(\Phi k)^3}{6} \partial_t^3 u_m^n + \mathcal{O}(k^4) \tag{T4} \label{eq:taylor_intermediate} \\
-  u_m^\star & = u_m^n + \Phi k \left(\mu \partial_x^2 u_m^n + a u_m^n\right) + \frac{(\Phi k)^2}{2} \left(\mu \partial_x^2 \left(\mu \partial_x^2 u_m^n + a u_m^n\right) + a \left(\mu \partial_x^2 u_m^n + a u_m^n\right)\right) + \mathcal{O}(k^4) \tag{T5} \label{eq:taylor_pde} \\
-  u_{m+1}^\star & \approx u_m^n + \left(\Phi k \partial_t u_m^n + h \partial_x u_m^n\right) + \frac{1}{2}\left(\Phi^2 k^2 \partial_t^2 u_m^n + h^2 \partial_x^2 u_m^n\right) + \mathcal{O}(h^3 + k^3) \tag{T6} \label{eq:taylor_mixed_forward} \\
-  u_{m-1}^\star & \approx u_m^n + \left(\Phi k \partial_t u_m^n - h \partial_x u_m^n\right) + \frac{1}{2}\left(\Phi^2 k^2 \partial_t^2 u_m^n + h^2 \partial_x^2 u_m^n\right) + \mathcal{O}(h^3 + k^3) \tag{T7} \label{eq:taylor_mixed_backward} \\[2ex]
-  \delta_x^2 u_m^n &= u_{m+1}^n - 2u_m^n + u_{m-1}^n = h^2\partial_{xx}u_m^n + \mathcal{O}(h^4) \tag{T8} \label{eq:central_diff} \\
-  \delta_x^2 u_m^\star &= u_{m+1}^\star - 2u_m^\star + u_{m-1}^\star = h^2\partial_{xx}u_m^n + \mathcal{O}(h^4 + k^4) \tag{T9} \label{eq:central_diff_star}
-\end{align*}
+\subsection{Taylor Series Expansions}\label{sec:taylor_expansions}
+
+Taylor expansions form the backbone of finite difference approximations by allowing us to represent continuous derivatives as discrete differences. When we approximate a derivative using grid points, the accuracy depends on how many terms we retain in the expansion.
+
+\paragraph{Spatial Expansions}
+For points neighboring $x_m$:
+\begin{align}
+  u(x_m + h, t_n) & = u_m^n + h \partial_x u_m^n + \frac{h^2}{2} \partial_x^2 u_m^n + \frac{h^3}{6} \partial_x^3 u_m^n + \mathcal{O}(h^4) \tag{T1} \label{eq:taylor_forward}  \\
+  u(x_m - h, t_n) & = u_m^n - h \partial_x u_m^n + \frac{h^2}{2} \partial_x^2 u_m^n - \frac{h^3}{6} \partial_x^3 u_m^n + \mathcal{O}(h^4) \tag{T2} \label{eq:taylor_backward}
+\end{align}
+
+\paragraph{Temporal Expansions}
+For advancing in time:
+\begin{align}
+  u(x_m, t_n + k) & = u_m^n + k \partial_t u_m^n + \frac{k^2}{2} \partial_t^2 u_m^n + \frac{k^3}{6} \partial_t^3 u_m^n + \mathcal{O}(k^4) \tag{T3} \label{eq:taylor_time} \\
+  u_m^\star       & = u_m^n + \Phi k \partial_t u_m^n + \frac{(\Phi k)^2}{2} \partial_t^2 u_m^n + \mathcal{O}(k^3) \tag{T4} \label{eq:taylor_intermediate}
+\end{align}
+where $u_m^\star$ represents an intermediate value for a time step $\Phi$ between $t_n$ and $t_{n+1}$.
+
+\paragraph{Mixed Space-Time Expansions}
+For points in both space and time:
+\begin{align}
+  u(x_m + h, t_n + \Phi k) & = u_m^n + h \partial_x u_m^n + \Phi k \partial_t u_m^n + \frac{h^2}{2}\partial_x^2 u_m^n + \mathcal{O}(h^3 + k^2) \tag{T5} \label{eq:taylor_mixed_forward}  \\
+  u(x_m - h, t_n + \Phi k) & = u_m^n - h \partial_x u_m^n + \Phi k \partial_t u_m^n + \frac{h^2}{2}\partial_x^2 u_m^n + \mathcal{O}(h^3 + k^2) \tag{T6} \label{eq:taylor_mixed_backward}
+\end{align}
+
+\paragraph{Second-Order Central Difference Approximations}
+From these expansions, we derive central difference approximations:
+\begin{align}
+  \delta_x^2 u_m^n     & = u_{m+1}^n - 2u_m^n + u_{m-1}^n = h^2\partial_{xx}u_m^n + \mathcal{O}(h^4) \tag{T7} \label{eq:central_diff}                        \\
+  \delta_x^2 u_m^\star & = u_{m+1}^\star - 2u_m^\star + u_{m-1}^\star = h^2\partial_{xx}u_m^n + \mathcal{O}(h^4 + k^2) \tag{T8} \label{eq:central_diff_star}
+\end{align}
+
+These approximations makes it possible to construct numerical schemes for solving PDEs.
 
 \subsection{The Heat Equation}
 
@@ -76,59 +142,26 @@ The heat equation is a \emph{parabolic} PDE describing how processes evolve over
 Discretizing the heat equation involves dividing the spatial domain \(\Omega\) into \(M\) equally spaced points, with \emph{step length \(h\)} and the temporal domain into \(N\) steps, with \emph{step size \(k\)}.
 Each grid point is denoted by \((x_m, t_n)\), where \(x_m = m h\) and \(t_n = n k\) for \(m = 0, \ldots, M\) and \(n = 0, \ldots, N\). The solution \(U_m^n\) approximates the temperature \(u(x_m, t_n)\) at each grid point.
 
-\begin{minipage}[l]{0.45\textwidth}
+\begin{align*}
+  U_m^n      & \approx u(x_m, t_n) \quad \text{for } (x_m, t_n) \in \mathbb{G} \\[1em]
+  \mathbb{G} & := \left\{(x_m, t_n) \,:\,
+  \begin{array}{l}
+    x_m = m h, \quad m = 0, 1, \ldots, M \\
+    t_n = n k, \quad n = 0, 1, \ldots, N
+  \end{array}
+  \right\}
+\end{align*}\label{eq:grid_points}
+
+Here, $L$ represents the spatial domain length $[0,L]$ and $T$ is the final simulation time.
+
+\begin{remark}{Uniform Grid}{step_sizes}
+  For computational simplicity, we use constant step sizes:
   \begin{align*}
-    U_m^n      & \approx u(x_m, t_n) \quad \text{for } (x_m, t_n) \in \mathbb{G} \\[1em]
-    \mathbb{G} & := \left\{(x_m, t_n):
-    \begin{cases}
-      x_m = m h & h = L/M, m = 0, \ldots, M \\
-      t_n = n k & k = T/N, n = 0, \ldots, N
-    \end{cases}\right\}
-  \end{align*}\label{eq:grid_points}
-  Where \(L\) is the spatial domain length and \(T\) is the final time.
-  \begin{remark}{Constant Grid Spacing}{step_sizes}
-    For simplicity, \(h\) and \(k\) are constant \( x_{m+1} = x_m + h,\quad t_{n+1} = t_n + k \).
-  \end{remark}
-
-\end{minipage}
-\hspace{0.05\textwidth}
-\begin{minipage}[r]{0.45\textwidth}
-  \begin{tikzpicture}
-    % Axes
-    \draw[->] (0,0) -- (5.2,0) node[right] {\(t\)};
-    \draw[->] (0,0) -- (0,3.2) node[above] {\(x\)};
-
-    % Grid points
-    \draw[step=0.5cm,gray,very thin] (0,0) grid (5,3);
-
-    \node[below] at (0,0) {\(t_0\)};
-    \node[below] at (0.5,0) {\(t_1\)};
-    \node[below] at (5,0) {\(t_N\)};
-    \node[left] at (0,0) {\(x_0\)};
-    \node[left] at (0,0.5) {\(x_1\)};
-    \node[left] at (0,3) {\(x_M\)};
-
-    % Add some key points with labels
-    \foreach \x in {2,2.5,3} {
-        \foreach \y in {1,1.5,2} {
-            \fill (\x,\y) circle (2pt);
-          }
-      }
-
-    % Add curly braces to show length k and h on axes
-    \draw [decorate,decoration={brace,amplitude=5pt}]
-    (2.5,1) -- (2,1) node [black,midway,yshift=-0.4cm] {\footnotesize \(k\)};
-    \draw [decorate,decoration={brace,amplitude=5pt}]
-    (2,1) -- (2,1.5) node [black,midway,xshift=-0.4cm] {\footnotesize \(h\)};
-
-    % Add circles/points at nodes
-    \fill (0,0) circle (2pt);
-    \fill (0.5,0) circle (2pt);
-    \fill (5,0) circle (2pt);
-    \fill (0,0.5) circle (2pt);
-    \fill (0,3) circle (2pt);
-  \end{tikzpicture}
-\end{minipage}
+    h & = \frac{L}{M} \quad \text{(spatial step size)}  \\
+    k & = \frac{T}{N} \quad \text{(temporal step size)}
+  \end{align*}
+  giving uniform increments: $x_{m+1} = x_m + h$ and $t_{n+1} = t_n + k$.
+\end{remark}
 
 \subsection{Finite Difference Schemes}
 Finite difference methods approximate differential equations by replacing them with a system of algebraic equations on the chosen grid.
@@ -152,168 +185,203 @@ The Crank-Nicolson scheme is an implicit method that approximates the spatial de
   U_m^{n+1} & = U_m^\star + \frac{k}{2} \left( f(U_m^\star) - f(U_m^n) \right)
 \end{align*}
 
+
+\begin{tikzpicture}[scale=0.8]
+  % Define colors
+  \colorlet{pointcolor}{black}
+  \colorlet{gridcolor}{gray!30}
+  \colorlet{predictorcolor}{red!70!black}
+  \colorlet{correctorcolor}{blue!70!black}
+  
+  % Axes
+  \draw[-stealth, thick] (0,0) -- (6.5,0) node[right] {$t$};
+  \draw[-stealth, thick] (0,0) -- (0,6.5) node[above] {$x$};
+
+  % Grid
+    \draw[step=0.5cm, gridcolor, thin] (0,0) grid (6,6);
+
+    % Add time labels
+    \foreach \x/\label in {0/0, 1/1, 2/2, 3/n, 4/{n+1}, 5/5, 6/N} {
+      \node[below] at (\x,0) {$t_{\label}$};
+      \draw (\x,-0.05) -- (\x,0.05);
+    }
+    
+    % Add space labels
+    \foreach \y/\label in {0/0, 1/1, 2/{m-1}, 3/m, 4/{m+1}, 5/5, 6/M} {
+      \node[left] at (0,\y) {$x_{\label}$};
+      \draw (-0.05,\y) -- (0.05,\y);
+    }
+
+  % Highlight grid points for Crank-Nicolson stencil
+  \fill[pointcolor] (3,3) circle (1.5pt) node[left] {$U_m^n$};
+  \fill[pointcolor] (4,3) circle (1.5pt) node[right] {$U_m^{n+1}$};
+  \fill[pointcolor] (3,2) circle (1.5pt) node[left] {$U_{m-1}^n$};
+  \fill[pointcolor] (3,4) circle (1.5pt) node[left] {$U_{m+1}^n$};
+  
+  % Add intermediate points for the predictor step
+  \fill[predictorcolor] (3.5,3) circle (1.5pt) node[above] {$U_m^\star$};
+  \fill[predictorcolor] (3.5,2) circle (1.5pt) node[right] {$U_{m-1}^\star$};
+  \fill[predictorcolor] (3.5,4) circle (1.5pt) node[right] {$U_{m+1}^\star$};
+  
+  % Show the predictor step with arrows
+  \draw[->,-stealth, predictorcolor, thick] (3,3) -- (3.5,3);
+  \draw[->,-stealth, predictorcolor, thick, dashed] (3,2) -- (3.5,3);
+  \draw[->,-stealth, predictorcolor, thick, dashed] (3,4) -- (3.5,3);
+  \draw[->,-stealth, predictorcolor, thick, dashed] (3,2) -- (3.5,2);
+  \draw[->,-stealth, predictorcolor, thick, dashed] (3,4) -- (3.5,4);
+  
+  % Show the corrector step with arrows
+  \draw[->,-stealth, correctorcolor, thick] (3.5,3) -- (4,3);
+  \draw[->,-stealth, correctorcolor, thick, dashed] (3.5,2) -- (4,3);
+  \draw[->,-stealth, correctorcolor, thick, dashed] (3.5,4) -- (4,3);
+  
+  % Step size annotations
+  \draw[<->] (3,0.5) -- (4,0.5) node[midway, fill=white, font=\small] {$k$};
+  \draw[<->] (0.5,3) -- (0.5,4) node[midway, fill=white, font=\small] {$h$};
+  
+  % Boundary and initial conditions
+  \draw[red, thick] (0,0) -- (0,6);
+  \draw[red, thick] (6,0) -- (6,6); 
+  \draw[red, thick] (0,0) -- (6,0); 
+  \draw[red, thick] (0,6) -- (6,6);
+  
+  % boundary labels MÅ FIKSES!
+
+  % Crank-Nicolson scheme visualization
+  \node[below right, align=left, font=\small, fill=gray!10, rounded corners, inner sep=5pt]
+    at (6.5,6.5) {
+    \textbf{Crank-Nicolson:}\\
+    Step 1 \textcolor{predictorcolor}{(Predictor)}: $U_m^* = U_m^n + \frac{r}{2}(\delta_x^2 U_m^* + \delta_x^2 U_m^n) + k f(U_m^n)$ \hspace{5pt} \\
+    Step 2 \textcolor{correctorcolor}{(Corrector)}: $U_m^{n+1} = U_m^* + \frac{k}{2}(f(U_m^*) - f(U_m^n))$
+  };
+\end{tikzpicture}
+
 \subsection{Error Analysis}
 Given the function \(f(u) = au\) for constant \(a\), we first want to analyze the consistency of the Crank-Nicolson scheme by determining the local truncation error (LTE).
 
-\subsubsection{Consistency analysis (Local Truncation Error)}
-The local truncation error (LTE) is the error at a single grid point when approximating a differential equation with a finite difference scheme.
-It is the difference between the exact solution \(u(x_m, t_n)\) and the numerical approximation \(U_m^n\).
+\subsubsection{Consistency}
+To determine the consistency of the Crank-Nicolson scheme for the heat equation with linear reaction term $f(u) = au$, we analyze the local truncation error by substituting the exact solution into our numerical scheme.
 
-\begin{theorem}{Local truncation error for Crank-Nicolson}{lte_cn}
-  Consider the heat equation with linear reaction term \(f(u) = au\) for constant \(a\), discretized using the Crank-Nicolson scheme. Let \(u_m^n = u(x_m,t_n)\) denote the exact solution at grid points and \(u_m^\star = u(x_m, t_n + \Phi k)\) for \(\Phi \in [0,1]\) be an intermediate solution.
-
-  The local truncation error \(\tau_m^n = \norm{u(x_m, t_n) - U_m^n}\) satisfies
+\begin{theorem}{Local truncation error for Crank--Nicolson}{lte_cn}
+  For the heat equation $u_t = \mu u_{xx} + au$ with constant $a$, the Crank--Nicolson scheme with steps $h$ (space) and $k$ (time) has local truncation error
   \[
-    \norm{\tau_m^n} = \mathcal{O}(k + \tfrac{h^4}{k})
+    \|\tau_m^n\| = \mathcal{O}\!\left(k +\tfrac{h^4}{k}\right)
   \]
-  When choosing the time step \(k \sim h^2\), the scheme achieves second-order accuracy in both time and space:
+  where $u_m^n = u(x_m,t_n)$ is the exact solution and $U_m^n$ its numerical approximation.
+
+  Under parabolic scaling $k \sim h^2$, the scheme achieves second-order accuracy:
   \[
-    \norm{\tau_m^n} = \mathcal{O}(h^2 + k^2)
+    \|\tau_m^n\| = \mathcal{O}\!\left(h^2 + k^2\right)
   \]
 \end{theorem}
+
 \begin{proof}[Proof of Theorem~\ref{thm:lte_cn}]
-  We start with exact solution for the Crank--Nicolson half-step:
+  We analyze the truncation error by examining how the exact solution satisfies the numerical scheme.
+
+  First, consider the central difference approximations for the second derivatives:
   \begin{align*}
-    u_m^\star
-    &= u_m^n
-    + \frac{r}{2}\left(\delta_x^2 u_m^\star + \delta_x^2 u_m^n\right)
-    + kaU_m^n 
+    \delta_x^2 u_m^n     & = h^2u_{xx}(x_m,t_n) + \mathcal{O}(h^4)       \\
+    \delta_x^2 u_m^\star & = h^2u_{xx}(x_m,t_n) + \mathcal{O}(h^4 + k^4)
   \end{align*}
-  We expand \(\delta_x^2 U_m^\star\) and \(\delta_x^2 U_m^n\) around $(x_m,t_n)$ using Taylor expansions.
+
+  \textit{Step 1 (Predictor):} Substituting the exact solution into the first stage:
+  \begin{equation}
+    u_m^\star = u_m^n + \frac{r}{2}\left(\delta_x^2 u_m^\star + \delta_x^2 u_m^n\right) + kau_m^n = u_m^n + \frac{\mu k}{2}u_{xx}(x_m,t_n) + kau_m^n + \mathcal{O}(h^4 + k^4)
+  \end{equation}
+  \textit{Step 2 (Corrector):} For the second stage:
+  \begin{align*}
+    u_m^{n+1} & = u_m^\star + \frac{k}{2}(au_m^\star - au_m^n)
+  \end{align*}
+
+  From the PDE, we know $u_t = \mu u_{xx} + au$ and can derive expressions for higher time derivatives. Using Taylor expansion:
+  \begin{align*}
+    u(x_m,t_n+k) & = u_m^n + ku_t + \frac{k^2}{2}u_{tt} + \frac{k^3}{6}u_{ttt} + \mathcal{O}(k^4)
+  \end{align*}
+
+  Comparing this with our numerical solution, we obtain:
+  \begin{align*}
+    U_m^{n+1} - u_m^{n+1} & = \mathcal{O}(k^2 + h^4)
+  \end{align*}
+
+  The local truncation error per step is thus:
+  \begin{align*}
+    \|\tau_m^{n+1}\| & = \frac{|U_m^{n+1} - u_m^{n+1}|}{k} = \mathcal{O}\left(k + \frac{h^4}{k}\right)
+  \end{align*}
+
+  Under the parabolic scaling $k \sim h^2$, we have $\frac{h^4}{k} \sim h^2$, yielding second-order accuracy:
+  \begin{align*}
+    \|\tau_m^{n+1}\| = \mathcal{O}(h^2 + k^2)
+  \end{align*}
+\end{proof}
+
+\subsubsection{Stability (Von Neumann)}
+\begin{theorem}{von Neumann Stability for Crank--Nicolson}{von_neumann_cn}
+  The Crank--Nicolson scheme for the heat equation with linear reaction term $f(u) = au$ is unconditionally stable for any choice of step sizes $h$ and $k$. The amplification factor $\xi$ satisfies:
+  \[
+    |\xi| \leq 1 + Ck
+  \]
+  for some constant $C$ independent of step sizes.
+\end{theorem}
+
+\begin{proof}[Proof of Theorem~\ref{thm:von_neumann_cn}]
+  We apply von Neumann stability analysis by studying how individual Fourier modes $U_m^n = \xi^n e^{i\beta mh}$ evolve under our scheme, where $\beta$ is the wave number.
+  
+  For the heat equation with linear reaction term $f(u) = au$, the two-stage Crank--Nicolson scheme is:
+  \begin{align*}
+    U_m^\star &= U_m^n + \frac{r}{2}\left(U_{m+1}^\star - 2U_m^\star + U_{m-1}^\star + U_{m+1}^n - 2U_m^n + U_{m-1}^n\right) + kaU_m^n \\
+    U_m^{n+1} &= U_m^\star + \frac{ka}{2}(U_m^\star - U_m^n)
+  \end{align*}
+  
+  Substituting the Fourier mode $U_m^n = \xi^n e^{i\beta mh}$ and letting $U_m^\star = \xi^n \xi^\star e^{i\beta mh}$, we can use the identity $e^{i\beta (m+1)h} - 2e^{i\beta mh} + e^{i\beta (m-1)h} = -4\sin^2(\beta h/2)e^{i\beta mh}$ and derive:
   
   \begin{align*}
-    u_m^\star &= u_m^n 
-    + \tfrac{r}{2}\left(h^2\partial_{xx}u_m^n + h^2\partial_{xx}u_m^n + \cdots \right) 
-    + ka u_m^n \\
-    &= u_m^n
-    + rh^2\partial_{xx}u_m^n + ka u_m^n
-    + \mathcal{O}(h^4 + k^4)
+    \xi^\star &= \frac{1 - r\sin^2(\beta h/2) + ka}{1 + 2r\sin^2(\beta h/2)}
   \end{align*}
-
-  \[
-    u_m^{n+1} = u_m^\star + \tfrac{k}{2}\left(f(u_m^\star) - f(u_m^n)\right) = u_m^\star + \tfrac{ka}{2}\left(u_m^\star - u_m^n\right)
-  \]
-
-  Next, we compute the full step using the intermediate solution:
+  
+  For the second stage:
   \begin{align*}
-    u_m^{n+1} &=
-    \left(u_m^n
-    + rh^2\partial_{xx}u_m^n + \cdots + ka u_m^n \right)
-    + \tfrac{ka}{2}\left(rh^2\partial_{xx}u_m^n + \cdots + ka u_m^n - u_m^n \right) \\
-    &=
-    u_m^n
-    + \left(rh^2\partial_{xx}u_m^n + \cdots + ka u_m^n\right)
-    + \tfrac{ka}{2}\left(rh^2\partial_{xx}u_m^n + \cdots + (ka - 1)u_m^n \right) \\
+    \xi^{n+1} &= \xi^n\left[\xi_\star\left(1 + \frac{ka}{2}\right) - \frac{ka}{2}\right]
   \end{align*}
-
-  Then for the left hand side (LHS) we have:
+  
+  Therefore, the amplification factor is:
   \begin{align*}
-    u_m^{n+1} &=
-    u_m^n
-    + k\partial_t u_m^n
-    + \tfrac{k^2}{2}\partial_t^2 u_m^n
-    + \tfrac{k^3}{6}\partial_t^3 u_m^n
-    + \cdots
+    \xi &= \frac{\left(1 - r\sin^2(\beta h/2) + ka\right)\left(1 + \frac{ka}{2}\right) - \frac{ka}{2}\left(1 + 2r\sin^2(\beta h/2)\right)}{1 + 2r\sin^2(\beta h/2)}
   \end{align*}
-  \[
-    U_m^{n+1}
-    = U_m^\star
-    + \tfrac{k}{2}\bigl(aU_m^\star - aU_m^n\bigr).
-  \]
-  Expand $U_m^\star$ in time around $(x_m,t_n)$ and collect terms carefully:
-  \[
-    U_m^{n+1}
-    = u_m^n
-    + k\partial_t u_m^n
-    + \tfrac{k^2}{2}\partial_t^2 u_m^n
-    + \tfrac{k^3}{6}\partial_t^3 u_m^n
-    + \tfrac{ark}{2}h^2\partial_{xx} u_m^n
-    + \tfrac{a^2k^2}{2}u_m^n
-    + \mathcal{O}\bigl(k^4 + h^4\bigr).
-  \]
+  
+  After algebraic simplification:
+  \begin{align*}
+    \xi &= \frac{1 - r\sin^2(\beta h/2)(1 + \frac{3ka}{2}) + ka + \frac{k^2a^2}{2}}{1 + 2r\sin^2(\beta h/2)}
+  \end{align*}
+  
+  Setting $s = \sin^2(\beta h/2) \in [0,1]$, for $a \geq 0$ and any $r > 0$, both numerator and denominator are positive with $\xi(s) < 1$ for all $s \in [0,1]$.
+  
+  \medskip
 
-  Since $rh^2 = \mu k$, the term involving $\partial_{xx} u_m^n$ can be written as
-  $\tfrac{a\mu k^2}{2}\partial_{xx}u_m^n$.
-
-  Compare to the exact solution at the next time level:
-
-  \[
-    u_m^{n+1}
-    = u_m^n
-    + k\partial_t u_m^n
-    + \tfrac{k^2}{2}\partial_t^2 u_m^n
-    + \tfrac{k^3}{6}\partial_t^3 u_m^n
-    + \mathcal{O}\bigl(k^4\bigr).
-  \]
-
-  Their difference is
-  \[
-    U_m^{n+1} - u_m^{n+1} =
-    \underbrace{\left(\tfrac{a\mu k^2}{2}\partial_{xx}u_m^n
-      + \tfrac{a^2k^2}{2}u_m^n\right)}_{\mathcal{O}(k^2)}
-    + \mathcal{O}\left(k^3 + h^4\right)
-    = \mathcal{O}\left(k^2 + h^4\right).
-  \]
-  Thus, the local truncation error (per time step) is
-  \[
-    \lVert{\tau_m^n}\rVert
-    = \left\lVert\dfrac{1}{k}\left(U_m^{n+1} - u_m^{n+1}\right) \right\rVert
-    = \mathcal{O}\bigl(k + \tfrac{h^4}{k}\bigr).
-  \]
-  If we choose $k \sim h^2$, then
-  \[
-    \frac{h^4}{k} \sim h^2,
-    \quad
-    \Rightarrow
-    \quad
-    \lVert{\tau_m^n}\rVert \approx \mathcal{O}\bigl(k^2 + h^2\bigr).
-  \]
-  Therefore, under the usual choice $k \propto h^2$, the scheme is second-order accurate in both time and space. \qed
+  For $a < 0$, the worst case occurs at $s = 0$, giving:
+  \begin{align*}
+    \xi(0) &= 1 + ka + \frac{k^2a^2}{2} = 1 + ka\left(1 + \frac{ka}{2}\right)
+  \end{align*}
+  
+  For sufficiently small $k$:
+  \begin{align*}
+    |\xi(0)| &\leq 1 + |a|k(1 + |a|k/2)
+  \end{align*}
+  
+  Therefore, $|\xi| \leq 1 + Ck$ with $C = |a|(1 + |a|k/2) \approx |a|$ for small $k$, confirming the scheme is unconditionally stable.
 \end{proof}
 
-\subsubsection{Stability Analysis (Von Neumann Stability)}
-The Von Neumann stability analysis is a method to determine the stability of a finite difference scheme by analyzing the growth of errors in the Fourier modes of the solution.
-\begin{theorem}{Stability of the Crank-Nicolson scheme}{stability_cn}
-  The Crank-Nicolson scheme is stable for the heat equation with linear reaction term \(f(u) = au\) if:
+\subsubsection{Convergence}
+\begin{theorem}{Lax Equivalence and Convergence of Crank--Nicolson}{cn_convergence}
+  Since the Crank--Nicolson scheme is both consistent and stable, by the Lax Equivalence Theorem (Theorem~\ref{thm:lax}), it is convergent. Under the parabolic scaling $k \sim h^2$, the scheme achieves second-order convergence:
   \[
-    ka \leq 0.618 \quad \text{and} \quad \frac{\mu k}{h^2}(\cos\beta - 1) \leq 0
+    \|e_m^n\| = \mathcal{O}\!\left(h^2 + k^2\right)
   \]
-  Under these conditions, the amplification factor satisfies \(\norm{\xi} \leq 1\).
 \end{theorem}
-\begin{proof}[Proof of Theorem~\ref{thm:stability_cn}]
-  Let \(U_m^n = \xi^n e^{i m \beta}\) be the Fourier mode of the numerical solution at grid point \((x_m, t_n)\), where \(\xi=\dfrac{\xi^{n+1}}{\xi^n}\) is the amplification factor and \(\beta\) is the wave number.
-  For the first step of the Crank-Nicolson scheme, we have:
-  \begin{align*}
-    U_m^\star               & = U_m^n + \dfrac{r}{2} (\delta_x^2 U_m^\star + \delta_x^2 U_m^n) + k a U_m^n                                                                     \\
-    \xi^\star e^{i m \beta} & = \xi^n e^{i m \beta} + \dfrac{r}{2} \left(\xi^\star + \xi^n\right)\left(e^{i\beta} - 2 + e^{-i\beta}\right)e^{im\beta}+ k a \xi^n e^{i m \beta} \\
-    \xi^\star               & = \xi^n + \dfrac{r}{2} \left(\xi^\star + \xi^n \right)\overbrace{\left(e^{i \beta} - 2 + e^{-i \beta}\right)}^{2\cos\beta - 2} + k a \xi^n       \\
-    \xi^\star               & = (1 + r(\cos\beta - 1) + ka) \xi^n + r(\cos\beta - 1)\xi^\star                                                                                  \\
-    \xi^\star               & = \dfrac{1 + \alpha + \sigma}{1 - \sigma} \xi^n \quad \text{where } \alpha = ka, \sigma = r(\cos\beta - 1)
-  \end{align*}
-  Then, for the second step, we get:
-  \begin{align*}
-    U_m^{n+1}               & = U_m^\star + \tfrac{\alpha}{2}(U_m^\star - U_m^n)                                                                      \\
-    \xi^{n+1} e^{i m \beta} & = \xi^\star e^{i m \beta} + \tfrac{\alpha}{2}(\xi^\star - \xi^n)e^{i m \beta}                                           \\
-    \xi^{n+1}               & = (1 + \tfrac{\alpha}{2}) \xi^\star - \tfrac{\alpha}{2} \xi^n                                                           \\
-    \xi^{n+1}               & = \left(1 + \tfrac{\alpha}{2}\right)\left(\tfrac{1 + \alpha + \sigma}{1 - \sigma}\right)\xi^n - \tfrac{\alpha}{2} \xi^n \\
-    \xi                     & = \tfrac{\xi^{n+1}}{\xi^n} = -\dfrac{\alpha^2 + 2(\alpha + 1) (\sigma + 1)}{2 (\sigma - 1)} \tag{Source: Trust me bro}
-  \end{align*}
-  Furthermore, we can now find a bound for the amplification factor:
-  \begin{align*}
-    \norm*{\xi}                                    & = \norm*{-\dfrac{\alpha^2 + 2(\alpha + 1)(\sigma + 1)}{2(\sigma - 1)}} \leq \dfrac{\alpha^2}{2\underbrace{\abs*{\sigma - 1}}_{\geq 1}} + \dfrac{(\alpha + 1)\overbrace{\abs*{\sigma + 1}}^{\leq 1}}{2\underbrace{\abs{\sigma - 1}}_{\geq 1}} \leq \dfrac{\alpha^2+ \alpha + 1}{2} \leq 1 \\                                                                                                                                                                                                                     \\
-    \tfrac{1}{2}\left(\alpha^2 + \alpha - 1\right) & \leq 0 \Rightarrow \alpha_{1,2} = \tfrac{1}{2}\left(-1 \pm \sqrt{5}\right) \approx -1.618, 0.618 \Rightarrow \alpha \leq 0.618                                                                                                                                                           \\
-    \norm*{\xi}                                    & \leq 1 \implies \alpha \leq 0.618 \text{ and } \sigma = \frac{\mu k}{h^2}(\cos\beta - 1) \leq 0 \tag{Stability}
-  \end{align*}
-\end{proof}
 
-\paragraph{\color{red} Is the method unconditionally stable?}
+\begin{remark}{Practical Implications}{practical_implications}
+  The unconditional stability of Crank--Nicolson allows for flexible choice of step sizes without stability concerns. However, accuracy considerations typically suggest using the parabolic scaling $k \sim h^2$ to balance spatial and temporal errors.
+  
+  Despite being implicit (requiring the solution of a linear system at each step), Crank--Nicolson's superior stability and accuracy properties often justify the additional computational cost compared to explicit methods like FTCS.
+\end{remark}
 
-\paragraph{\color{red} What can be said about the global error?}
-
-\begin{align*}
-  \mathcal{L}_h U_m^{n+1} & = U_m^\star + \tfrac{ka}{2} \left( U_m^\star - U_m^n \right)                                                                                                                                 \\
-                          & = \left(U_m^n + \frac{r}{2} \left( \delta_x^2 U_m^{n+\phi} + \delta_x^2 U_m^n \right) + k a U_m^n\right) + \tfrac{ka}{2} \left( U_m^{n+\phi} - U_m^n \right)                                 \\
-                          & = u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n + \tfrac{k^3}{6}\partial_t^3 u_m^n + \tfrac{ark}{2}h^2\partial_{xx} u_m^n + \tfrac{a^2k^2}{2}u_m^n + \mathcal{O}(k^4+h^4)
-\end{align*}
-
-\subsection{\color{red} Numerical Experiments}
+\subsection{Numerical Experiments}

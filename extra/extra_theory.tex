@@ -88,7 +88,97 @@ If we choose time step \(k\) such that \(k \sim h^2\) is of similar order as the
   \norm{\tau_m^n} = \mathcal{O}(k + \frac{h^4}{k}) \approx \mathcal{O}(k^2 + h^2) \quad \text{where} \quad k \sim h^2
 \]
 
+\begin{proof}[Proof of Theorem~\ref{thm:lte_cn}]
+  We start with exact solution for the Crank--Nicolson half-step:
+  \[
+    u_m^\star = u_m^n
+    + \frac{r}{2}\left(\delta_x^2 u_m^\star + \delta_x^2 u_m^n\right)
+    + k f(u_m^n)
+  \]
 
+  We expand \(\delta_x^2 U_m^\star\) and \(\delta_x^2 U_m^n\) according to \eqref{eq:central_diff} and \eqref{eq:central_diff_star}:
+
+  Our PDE is given as \(f(u) = \partial_t u - \mu \partial_x^2 u \).
+
+  \begin{align*}
+    u_m^\star & = u_m^n
+    + \tfrac{r h^2}{2}\partial_x^2 \left(u_m^\star + u_m^n\right)
+    + \tfrac{rh^4}{12}\partial_x^4 \left(u_m^\star + u_m^n\right)
+    + \cdots + k\left(\partial_t u_m^n - \mu \partial_x^2 u_m^n\right)                                                                                                                                                                                  \\
+              & = u_m^n
+    + \tfrac{r h^2}{2}\partial_x^2 u_m^\star + \tfrac{rh^4}{12}\partial_x^4 u_m^\star + \cdots
+    + \tfrac{r h^2}{2}\partial_x^2 u_m^n + \tfrac{rh^4}{12}\partial_x^4 u_m^n + \cdots
+    + k\partial_t u_m^n - k\mu \partial_x^2 u_m^n                                                                                                                                                                                                       \\
+              & = u_m^n
+    + \tfrac{k h^2 \mu}{2h^2}\partial_x^2 u_m^\star + \tfrac{k \mu h^4}{12h^2}\partial_x^4 u_m^\star + \cdots
+    + \tfrac{k h^2 \mu }{2h^2}\partial_x^2 u_m^n + \tfrac{\mu k h^4}{12h^2}\partial_x^4 u_m^n + \cdots
+    + k\partial_t u_m^n - k\mu \partial_x^2 u_m^n                                                                                                                                                                                                       \\
+              & = u_m^n + k\partial_t u_m^n + \tfrac{k \mu}{2}\partial_x^2 u_m^\star + \tfrac{k \mu h^2}{12}\partial_x^4 u_m^\star + \cdots + \left(\tfrac{k\mu}{2} - k \mu\right)\partial_x^2 u_m^n + \tfrac{\mu k h^2}{12}\partial_x^4 u_m^n + \cdots \\
+              & = u_m^n + k\partial_t u_m^n + \tfrac{k \mu}{2}\partial_x^2 u_m^\star + \tfrac{k \mu h^2}{12}\partial_x^4 u_m^\star + \cdots - \tfrac{k\mu}{2}\partial_x^2 u_m^n + \tfrac{\mu k h^2}{12}\partial_x^4 u_m^n + \cdots                      \\
+      \end{align*}
+
+  And for the complete Crank--Nicolson scheme (LHS):
+
+  \begin{align*}
+    u_m^{n+1}                                 & = u_m^\star + \tfrac{k}{2}\left(f(u_m^\star) - f(u_m^n)\right) + k\tau_m^{n+1}                                                                                                                                  \\
+    = \bigl[u_m^n                             & +\tfrac{k \mu}{2}\partial_x^2 u_m^\star + \tfrac{k \mu h^2}{12}\partial_x^4 u_m^\star + \cdots + k\partial_t u_m^n - \tfrac{k\mu}{2}\partial_x^2 u_m^n + \tfrac{\mu k h^2}{12}\partial_x^4 u_m^n + \cdots\bigr] \\
+                                              & + \left[\tfrac{k}{2}\partial_t u_m^\star - \tfrac{k\mu}{2}\partial_x^2 u_m^\star - \tfrac{k}{2}\partial_t u_m^n + \tfrac{k\mu}{2}\partial_x^2 u_m^n\right]                                                      \\
+    = u_m^n                                   & +\tfrac{k \mu}{2}\partial_x^2 u_m^\star -  \tfrac{k\mu}{2}\partial_x^2 u_m^\star +\tfrac{k \mu h^2}{12}\partial_x^4 u_m^\star                                                                                   \\
+                                              & - \tfrac{k\mu}{2}\partial_x^2 u_m^n +  \tfrac{k\mu}{2}\partial_x^2 u_m^n +  \tfrac{\mu k h^2}{12}\partial_x^4 u_m^n + \cdots                                                                                    \\
+                                              & + k\partial_t u_m^n - \tfrac{k}{2}\partial_t u_m^n + \tfrac{k}{2}\partial_t u_m^\star                                                                                                                           \\
+    u_m^{n+1}                                 & = u_m^n + \tfrac{k}{2}\partial_t\left(u_m^\star + u_m^n\right) + \tfrac{k \mu h^2}{12}\partial_x^4 \left(u_m^\star + u_m^n\right) + \cdots                                                                      \\
+    k\tau_m^n = u_m^{n+1} - u_m^n             & = k\cdot\left(\tfrac{1}{2}\partial_t\left(u_m^\star + u_m^n\right) + \tfrac{\mu h^2}{12}\partial_x^4 \left(u_m^\star + u_m^n\right) + \cdots\right)                                                             \\
+    \frac{1}{k}\left(u_m^{n+1} - u_m^n\right) & = \tfrac{1}{2}\partial_t\left(u_m^\star + u_m^n\right) + \tfrac{\mu h^2}{12}\partial_x^4 \left(u_m^\star + u_m^n\right) + \cdots\\
+    \frac{1}{k}\left(u_m^{n+1} - u_m^n\right) & = \tfrac{1}{2}\partial_t\left(u_m^n + \Phi k \partial_t u_m^n + \frac{(\Phi k)^2}{2} \partial_t^2 u_m^n + \frac{(\Phi k)^3}{6} \partial_t^3 u_m^n + \cdots + u_m^n\right) \\
+    &+ \tfrac{\mu h^2}{12}\partial_x^4 \left(u_m^n + \Phi k \partial_t u_m^n + \cdots + u_m^n\right) + \cdots\\
+    &= \partial_t u_m^n + \tfrac{\phi k}{2}\partial_t^2 u_m^n + \cdots + \tfrac{\mu h^2}{12}\partial_x^4 u_m^n + \tfrac{\mu h^2\phi k}{12}\partial_x^4\partial_t u_m^n + \cdots\\
+    &= \left[\mu u_{xx} + au\right] + \mathcal{O}(k + h^2) 
+  \end{align*}
+
+  The Local Truncation Error (LTE) is given by the difference between the exact solution and the numerical approximation:
+  \begin{align*}
+    k\tau_m^n & = u_m^{n+1} - u_m^n                                                                                                                                                   \\
+              & = \left[u_m^n + \tfrac{k}{2}\partial_t\left(u_m^\star + u_m^n\right) + \tfrac{k \mu h^2}{12}\partial_x^4 \left(u_m^\star + u_m^n\right) + \cdots\right]               \\
+              & - \left[u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n + \tfrac{k^3}{6}\partial_t^3 u_m^n + \cdots\right]                                               \\
+              & = \tfrac{k}{2}\partial_t\left(u_m^\star - u_m^n\right) + \tfrac{k \mu h^2}{12}\partial_x^4 \left(u_m^\star + u_m^n\right) - \tfrac{k^2}{2}\partial_t^2 u_m^n + \cdots
+  \end{align*}
+
+
+  Compare to the exact solution at the next time level:
+
+  \[
+    u_m^{n+1}
+    = u_m^n
+    + k\partial_t u_m^n
+    + \tfrac{k^2}{2}\partial_t^2 u_m^n
+    + \tfrac{k^3}{6}\partial_t^3 u_m^n
+    + \mathcal{O}\bigl(k^4\bigr).
+  \]
+
+  Their difference is
+  \[
+    U_m^{n+1} - u_m^{n+1} =
+    \underbrace{\left(\tfrac{a\mu k^2}{2}\partial_{xx}u_m^n
+      + \tfrac{a^2k^2}{2}u_m^n\right)}_{\mathcal{O}(k^2)}
+    + \mathcal{O}\left(k^3 + h^4\right)
+    = \mathcal{O}\left(k^2 + h^4\right).
+  \]
+  Thus, the local truncation error (per time step) is
+  \[
+    \lVert{\tau_m^n}\rVert
+    = \left\lVert\dfrac{1}{k}\left(U_m^{n+1} - u_m^{n+1}\right) \right\rVert
+    = \mathcal{O}\bigl(k + \tfrac{h^4}{k}\bigr).
+  \]
+  If we choose $k \sim h^2$, then
+  \[
+    \frac{h^4}{k} \sim h^2,
+    \quad
+    \Rightarrow
+    \quad
+    \lVert{\tau_m^n}\rVert \approx \mathcal{O}\bigl(k^2 + h^2\bigr).
+  \]
+  Therefore, under the usual choice $k \propto h^2$, the scheme is second-order accurate in both time and space. \qed
+\end{proof}
 
 \paragraph{System of equations}
 
@@ -227,3 +317,70 @@ The matrices \(A_{12}\) and \(A_{21}\) are both zero matrices:
   \norm*{\xi}                & = \frac{(ka)^2 + (ka) + 1}{2} \leq 1 + \mu k                                                                       \\
   a^2 k^2 + (a - 2\mu) k - 1 & \leq 0 \quad \implies \quad k_{1,2} = \frac{-(a - 2\mu) \pm \overbrace{\sqrt{(a - 2\mu)^2 + 4a^2}}^{\geq 0}}{2a^2} \\
 \end{align*}
+
+
+
+\begin{lemma}{Error Propagation}{error_prop}
+  For stable numerical schemes, the global error at time $t_n$ can be bounded in terms of the accumulated local truncation errors:
+  \[
+    \|e^n\| \leq C \sum_{j=0}^{n-1} \|\tau^j\| k
+  \]
+  where $C$ is a stability constant independent of $h$ and $k$.
+\end{lemma}
+
+
+
+Let's define the local truncation error (LTE) $\tau_m^n$ as:
+\[
+  \tau_m^n = \frac{u_m^{n+1} - \mathcal{L}_h u_m^n}{k}
+\]
+
+where $\mathcal{L}_h$ is the numerical operator for our Crank-Nicolson scheme and $u_m^n$ is the exact solution evaluated at grid points.
+
+For the first stage of our scheme:
+\begin{align}
+  u_m^\star & = u_m^n + \frac{r}{2}(\delta_x^2 u_m^\star + \delta_x^2 u_m^n) + k a u_m^n \\
+\end{align}
+
+Using the Taylor expansions from equations \eqref{eq:central_diff} and \eqref{eq:central_diff_star}, and recalling that $r = \frac{\mu k}{h^2}$:
+\begin{align}
+  u_m^\star & = u_m^n + \frac{\mu k}{2}(u_{xx}(x_m,t_n) + u_{xx}(x_m,t_n)) + k a u_m^n + \mathcal{O}(h^4) \\
+            & = u_m^n + \mu k u_{xx}(x_m,t_n) + k a u_m^n + \mathcal{O}(h^4)
+\end{align}
+
+Since the PDE gives us $u_t = \mu u_{xx} + au$, we have:
+\begin{align}
+  u_m^\star & = u_m^n + k u_t(x_m,t_n) + \mathcal{O}(h^4)     \\
+            & = u_m^n + k \partial_t u_m^n + \mathcal{O}(h^4)
+\end{align}
+
+For the corrector stage:
+\begin{align}
+  u_m^{n+1} & = u_m^\star + \frac{k}{2}(au_m^\star - au_m^n)                                    \\
+            & = u_m^n + k \partial_t u_m^n + \frac{ka}{2}(u_m^\star - u_m^n) + \mathcal{O}(h^4)
+\end{align}
+
+Using the Taylor expansion for $u_m^\star$:
+\begin{align}
+  u_m^{n+1} & = u_m^n + k \partial_t u_m^n + \frac{ka}{2}(k \partial_t u_m^n) + \mathcal{O}(k^3 + h^4) \\
+            & = u_m^n + k \partial_t u_m^n + \frac{k^2a}{2} \partial_t u_m^n + \mathcal{O}(k^3 + h^4)
+\end{align}
+
+From Taylor's theorem \eqref{eq:taylor_time}, the exact solution satisfies:
+\begin{align}
+  u_m^{n+1} & = u_m^n + k \partial_t u_m^n + \frac{k^2}{2}\partial_t^2 u_m^n + \mathcal{O}(k^3)
+\end{align}
+
+Therefore, the local truncation error is:
+\begin{align}
+  \tau_m^n & = \frac{1}{k}\left(u_m^{n+1} - \mathcal{L}_h u_m^n\right)                                                           \\
+           & = \frac{1}{k}\left(\frac{k^2}{2}\partial_t^2 u_m^n - \frac{k^2a}{2}\partial_t u_m^n + \mathcal{O}(k^3 + h^4)\right) \\
+           & = \mathcal{O}\left(k + \frac{h^4}{k}\right)
+\end{align}
+
+Under parabolic scaling where $k \sim h^2$, we obtain:
+\begin{align}
+  \|\tau_m^n\| = \mathcal{O}(h^2 + k^2)
+\end{align}
+
+which confirms that the Crank-Nicolson scheme is second-order accurate in both space and time.
