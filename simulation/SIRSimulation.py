@@ -4,7 +4,7 @@ from matplotlib.animation import FuncAnimation
 from scipy.sparse import diags, eye, kron
 
 class SIRSimulation:
-    def __init__(self, L=1.0, M=6, T=10, dt=0.001, initial_infection=0.01,
+    def __init__(self, n=0, L=1.0, M=50, T=10, dt=0.001, initial_infection=0.01,
                  beta=3, gamma=1, mu_s=0.001, mu_i=0.001):
         self.L = L
         self.M = M
@@ -16,6 +16,8 @@ class SIRSimulation:
         self.gamma = gamma
         self.mu_s = mu_s
         self.mu_i = mu_i
+        self.ii = initial_infection
+        self.n = n
 
         self.x = np.linspace(0, L, M)
         self.X, self.Y = np.meshgrid(self.x, self.x)
@@ -24,31 +26,39 @@ class SIRSimulation:
         self.I = np.zeros(M**2)
         self.R = np.zeros(M**2)
 
-        self.I[self.X.ravel() < self.L * 0.2] = initial_infection
-        self.I[self.X.ravel() < self.L * 0.1] = 0
+        self.initial_condition()
         self.S -= self.I
-
-
-        self.L_matrix = self.laplacian(M)
+        
+        self.L_matrix = self.laplacian()
     
-    def initial_condition(self, n):
-        return
+    def initial_condition(self):
+        if self.n == 0:  # 3 random infection areas
+            cx, cy = np.random.uniform(0.2, 0.8, 3) * self.L, np.random.uniform(0.2, 0.8, 3) * self.L
+            X_flat, Y_flat = self.X.ravel(), self.Y.ravel()
+            distances = np.min((X_flat[:, None] - cx) ** 2 + (Y_flat[:, None] - cy) ** 2, axis=1)
+            self.I[distances < 0.009] = self.ii
+
+        elif self.n == 1:  # Linear front of infection
+            self.I[self.X.ravel() < self.L * 0.2] = self.ii
+
+        else:  # Dense central infection
+            dist_to_center = (self.X - self.L / 2) ** 2 + (self.Y - self.L / 2) ** 2
+            self.I = self.ii * np.exp(-100 * dist_to_center)
+
+
+
+
+    def laplacian(self):
+        diag = -2 * np.ones(self.M)
+        diag[0] = diag[-1] = -1
+        off = np.ones(self.M - 1)
+
+        L = diags([off, diag, off], [-1, 0, 1], shape=(self.M, self.M), format='csr') / self.h**2
+        I = eye(self.M, format='csr')
+        
+        return kron(I, L) + kron(L, I)
 
     
-    def laplacian(self, M):
-        Mi = M       # Number of inner points in each direction
-        Mi2 = M**2  # Number of inner points in total
-
-        # Construct a sparse A-matrix
-        B = diags([1,-4,1],[-1,0,1],shape=(Mi, Mi), format="csr")
-        A = kron(eye(Mi), B)
-        C = diags([1,1],[-Mi,Mi],shape=(Mi2, Mi2), format="csr")
-        A = (A+C).tocsr() # Konverter til csr-format (necessary for spsolve)
-        plt.imshow((A/self.h).todense())
-        plt.colorbar()
-        plt.show()
-
-        return A/self.h**2
 
     def step(self):
         infection = self.beta * self.S * self.I
@@ -65,9 +75,6 @@ class SIRSimulation:
         self.I += self.dt * dI
         self.R += self.dt * dR
 
-        self.S = np.maximum(self.S, 0)
-        self.I = np.maximum(self.I, 0)
-        self.R = np.maximum(self.R, 0)
 
 
     def show_initial(self):
@@ -93,9 +100,7 @@ class SIRSimulation:
         anim = FuncAnimation(fig, update, frames=self.Nt//50, interval=10) 
         plt.show()
 
-    
 
-if __name__ == "__main__":
-    sim = SIRSimulation()
-    #sim.show_initial()
-    sim.animate()
+sim = SIRSimulation()
+sim.show_initial()
+sim.animate()
