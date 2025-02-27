@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from scipy.sparse import diags
+from scipy.sparse import diags, eye, csr_matrix
 from scipy.sparse.linalg import spsolve
 import scienceplots
 
@@ -21,26 +21,20 @@ class HeatSolver:
     
     def exact_solution(self, x, t):
         return np.exp((self.a - self.mu * (np.pi**2)) * t) * np.sin(np.pi * x)
-    
+        
     def solve_crank_nicolson(self, M, N, return_all=False):
         h = self.L / M  # Spatial step
         k = self.T / N  # Time step 
-        r = self.mu * k / (h**2) 
+        r = self.mu * k / (h**2)
         
         # Grid points
         x = np.linspace(0, self.L, M+1)
         t = np.linspace(0, self.T, N+1)
         
-        # Initialize solution array
-        if return_all:
-            U = np.zeros((N+1, M+1))
-            U[0, :] = self.exact_solution(x, 0)  # Initial condition
-        else:
-            U = self.exact_solution(x, 0)
-            U_new = np.copy(U)
+        # Solution
+        U = np.zeros((N+1, M+1))
+        U[0, :] = self.exact_solution(x, 0)  # Initial condition
         
-        # Set up tridiagonal matrices for the system (I - r/2 * D2) U^* = (I + r/2 * D2 + ak I) U^n
-        # Interior points only (1 to M-1)
         main_diag = np.ones(M-1) * (1 + r)
         off_diag = np.ones(M-2) * (-r/2)
         
