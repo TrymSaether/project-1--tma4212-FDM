@@ -57,7 +57,7 @@ By substituting the expansions into the Crank-Nicolson scheme, we can analyze th
 
 \begin{align*}
   U_m^{n+1} & = U_m^\star + \tfrac{k}{2} \Bigl( aU_m^\star - aU_m^n \Bigr)                                                                                                                                               \\
-            & = \left[ u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n + \tfrac{k^3}{6}\partial_t^3 u_m^n + \mathcal{O}(k^4) \right]                                                                      \\
+            & = \left[ u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n + \tfrac{k^3}{6}\partial_t^3 u_m^n + \mathcal{O}(k^4) \right]                                                                        \\
             & \quad {}+ \tfrac{ka}{2}\left[\left( u_m^n + rh^2\partial_{xx} u_m^n + kau_m^n + \mathcal{O}(h^4+k^2) \right) - u_m^n \right]                                                                               \\
             & = u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n + \tfrac{k^3}{6}\partial_t^3 u_m^n + \mathcal{O}(k^4) + \tfrac{ka}{2}\Bigl( rh^2\partial_{xx} u_m^n + kau_m^n \Bigr) + \mathcal{O}(h^4+k^4) \\
             & = u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n
@@ -74,7 +74,7 @@ The left-hand side of the scheme is the exact solution at the next time level:
 The local truncation error (LTE) is the difference between the exact solution and the numerical approximation:
 
 \begin{align*}
-  \abs*{\tau_m^{n+1}} & = \abs*{\dfrac{u_m^{n+1} - u_m^n}{k} - \dfrac{U_m^{n+1} - U_m^n}{k}} \\
+  \abs*{\tau_m^{n+1}} & = \abs*{\dfrac{u_m^{n+1} - u_m^n}{k} - \dfrac{U_m^{n+1} - U_m^n}{k}}                                                                                                     \\
                       & = \left[ u_m^n + k\partial_t u_m^n + \tfrac{k^2}{2}\partial_t^2 u_m^n + \tfrac{k^3}{6}\partial_t^3 u_m^n + \mathcal{O}(k^4) \right]                                      \\
                       & - \left[ u_m^n + k\mu\partial_{x}^2 u_m^n + kau_m^n + \tfrac{a\mu k^2}{2}\partial_{x}^2 u_m^n + \tfrac{a^2k^2}{2}u_m^n \right] + \mathcal{O}(k^4+h^4)                    \\
                       & = k^2 \left[\tfrac{1}{2}\partial_t^2 u_m^n - \tfrac{a \mu}{2}\partial_{x}^2 u_m^n - \tfrac{a^2}{2}u_m^n\right] + \tfrac{k^3}{6}\partial_t^3 u_m^n + \mathcal{O}(k^4+h^4) \\
@@ -115,7 +115,7 @@ If we choose time step \(k\) such that \(k \sim h^2\) is of similar order as the
     + k\partial_t u_m^n - k\mu \partial_x^2 u_m^n                                                                                                                                                                                                       \\
               & = u_m^n + k\partial_t u_m^n + \tfrac{k \mu}{2}\partial_x^2 u_m^\star + \tfrac{k \mu h^2}{12}\partial_x^4 u_m^\star + \cdots + \left(\tfrac{k\mu}{2} - k \mu\right)\partial_x^2 u_m^n + \tfrac{\mu k h^2}{12}\partial_x^4 u_m^n + \cdots \\
               & = u_m^n + k\partial_t u_m^n + \tfrac{k \mu}{2}\partial_x^2 u_m^\star + \tfrac{k \mu h^2}{12}\partial_x^4 u_m^\star + \cdots - \tfrac{k\mu}{2}\partial_x^2 u_m^n + \tfrac{\mu k h^2}{12}\partial_x^4 u_m^n + \cdots                      \\
-      \end{align*}
+  \end{align*}
 
   And for the complete Crank--Nicolson scheme (LHS):
 
@@ -128,11 +128,11 @@ If we choose time step \(k\) such that \(k \sim h^2\) is of similar order as the
                                               & + k\partial_t u_m^n - \tfrac{k}{2}\partial_t u_m^n + \tfrac{k}{2}\partial_t u_m^\star                                                                                                                           \\
     u_m^{n+1}                                 & = u_m^n + \tfrac{k}{2}\partial_t\left(u_m^\star + u_m^n\right) + \tfrac{k \mu h^2}{12}\partial_x^4 \left(u_m^\star + u_m^n\right) + \cdots                                                                      \\
     k\tau_m^n = u_m^{n+1} - u_m^n             & = k\cdot\left(\tfrac{1}{2}\partial_t\left(u_m^\star + u_m^n\right) + \tfrac{\mu h^2}{12}\partial_x^4 \left(u_m^\star + u_m^n\right) + \cdots\right)                                                             \\
-    \frac{1}{k}\left(u_m^{n+1} - u_m^n\right) & = \tfrac{1}{2}\partial_t\left(u_m^\star + u_m^n\right) + \tfrac{\mu h^2}{12}\partial_x^4 \left(u_m^\star + u_m^n\right) + \cdots\\
-    \frac{1}{k}\left(u_m^{n+1} - u_m^n\right) & = \tfrac{1}{2}\partial_t\left(u_m^n + \Phi k \partial_t u_m^n + \frac{(\Phi k)^2}{2} \partial_t^2 u_m^n + \frac{(\Phi k)^3}{6} \partial_t^3 u_m^n + \cdots + u_m^n\right) \\
-    &+ \tfrac{\mu h^2}{12}\partial_x^4 \left(u_m^n + \Phi k \partial_t u_m^n + \cdots + u_m^n\right) + \cdots\\
-    &= \partial_t u_m^n + \tfrac{\phi k}{2}\partial_t^2 u_m^n + \cdots + \tfrac{\mu h^2}{12}\partial_x^4 u_m^n + \tfrac{\mu h^2\phi k}{12}\partial_x^4\partial_t u_m^n + \cdots\\
-    &= \left[\mu u_{xx} + au\right] + \mathcal{O}(k + h^2) 
+    \frac{1}{k}\left(u_m^{n+1} - u_m^n\right) & = \tfrac{1}{2}\partial_t\left(u_m^\star + u_m^n\right) + \tfrac{\mu h^2}{12}\partial_x^4 \left(u_m^\star + u_m^n\right) + \cdots                                                                                \\
+    \frac{1}{k}\left(u_m^{n+1} - u_m^n\right) & = \tfrac{1}{2}\partial_t\left(u_m^n + \Phi k \partial_t u_m^n + \frac{(\Phi k)^2}{2} \partial_t^2 u_m^n + \frac{(\Phi k)^3}{6} \partial_t^3 u_m^n + \cdots + u_m^n\right)                                       \\
+                                              & + \tfrac{\mu h^2}{12}\partial_x^4 \left(u_m^n + \Phi k \partial_t u_m^n + \cdots + u_m^n\right) + \cdots                                                                                                        \\
+                                              & = \partial_t u_m^n + \tfrac{\phi k}{2}\partial_t^2 u_m^n + \cdots + \tfrac{\mu h^2}{12}\partial_x^4 u_m^n + \tfrac{\mu h^2\phi k}{12}\partial_x^4\partial_t u_m^n + \cdots                                      \\
+                                              & = \left[\mu u_{xx} + au\right] + \mathcal{O}(k + h^2)
   \end{align*}
 
   The Local Truncation Error (LTE) is given by the difference between the exact solution and the numerical approximation:
@@ -384,3 +384,46 @@ Under parabolic scaling where $k \sim h^2$, we obtain:
 \end{align}
 
 which confirms that the Crank-Nicolson scheme is second-order accurate in both space and time.
+
+
+
+\subsubsection{Stability (von Neumann)}
+The Von Neumann stability analysis is a method to determine the stability of a finite difference scheme by analyzing the growth of errors in the Fourier modes of the solution.
+\begin{theorem}{Stability of the Crank-Nicolson scheme}{stability_cn}
+  The Crank-Nicolson scheme is stable for the heat equation with linear reaction term \(f(u) = au\) if:
+  \[
+    ka \leq 0.618 \quad \text{and} \quad \frac{\mu k}{h^2}(\cos\beta - 1) \leq 0
+  \]
+  Under these conditions, the amplification factor satisfies \(\norm{\xi} \leq 1\).
+\end{theorem}
+\begin{proof}[Proof of Theorem~\ref{thm:stability_cn}]
+  Let \(U_m^n = \xi^n e^{i m \beta}\) be the Fourier mode of the numerical solution at grid point \((x_m, t_n)\), where \(\xi=\dfrac{\xi^{n+1}}{\xi^n}\) is the amplification factor and \(\beta\) is the wave number.
+  For the first step of the Crank-Nicolson scheme, we have:
+  \begin{align*}
+    U_m^\star               & = U_m^n + \dfrac{r}{2} (\delta_x^2 U_m^\star + \delta_x^2 U_m^n) + k a U_m^n                                                                     \\
+    \xi^\star e^{i m \beta} & = \xi^n e^{i m \beta} + \dfrac{r}{2} \left(\xi^\star + \xi^n\right)\left(e^{i\beta} - 2 + e^{-i\beta}\right)e^{im\beta}+ k a \xi^n e^{i m \beta} \\
+    \xi^\star               & = \xi^n + \dfrac{r}{2} \left(\xi^\star + \xi^n \right)\overbrace{\left(e^{i \beta} - 2 + e^{-i \beta}\right)}^{2\cos\beta - 2} + k a \xi^n       \\
+    \xi^\star               & = (1 + r(\cos\beta - 1) + ka) \xi^n + r(\cos\beta - 1)\xi^\star                                                                                  \\
+    \xi^\star               & = \dfrac{1 + \alpha + \sigma}{1 - \sigma} \xi^n \quad \text{where } \alpha = ka, \sigma = r(\cos\beta - 1)
+  \end{align*}
+  Then, for the second step, we get:
+  \begin{align*}
+    U_m^{n+1}               & = U_m^\star + \tfrac{\alpha}{2}(U_m^\star - U_m^n)                                                                      \\
+    \xi^{n+1} e^{i m \beta} & = \xi^\star e^{i m \beta} + \tfrac{\alpha}{2}(\xi^\star - \xi^n)e^{i m \beta}                                           \\
+    \xi^{n+1}               & = (1 + \tfrac{\alpha}{2}) \xi^\star - \tfrac{\alpha}{2} \xi^n                                                           \\
+    \xi^{n+1}               & = \left(1 + \tfrac{\alpha}{2}\right)\left(\tfrac{1 + \alpha + \sigma}{1 - \sigma}\right)\xi^n - \tfrac{\alpha}{2} \xi^n \\
+    \xi                     & = \tfrac{\xi^{n+1}}{\xi^n} = -\dfrac{\alpha^2 + 2(\alpha + 1) (\sigma + 1)}{2 (\sigma - 1)} \tag{Source: Trust me bro}
+  \end{align*}
+  Furthermore, we can now find a bound for the amplification factor:
+  \begin{align*}
+    \norm*{\xi}                                    & = \norm*{-\dfrac{\alpha^2 + 2(\alpha + 1)(\sigma + 1)}{2(\sigma - 1)}} \leq \dfrac{\alpha^2}{2\underbrace{\abs*{\sigma - 1}}_{\geq 1}} + \dfrac{(\alpha + 1)\overbrace{\abs*{\sigma + 1}}^{\leq 1}}{2\underbrace{\abs{\sigma - 1}}_{\geq 1}} \leq \dfrac{\alpha^2+ \alpha + 1}{2} \leq 1 \\                                                                                                                                                                                                                     \\
+    \tfrac{1}{2}\left(\alpha^2 + \alpha - 1\right) & \leq 0 \Rightarrow \alpha_{1,2} = \tfrac{1}{2}\left(-1 \pm \sqrt{5}\right) \approx -1.618, 0.618 \Rightarrow \alpha \leq 0.618                                                                                                                                                           \\
+    \norm*{\xi}                                    & \leq 1 \implies \alpha \leq 0.618 \text{ and } \sigma = \frac{\mu k}{h^2}(\cos\beta - 1) \leq 0 \tag{Stability}
+  \end{align*}
+\end{proof}
+
+
+If the diffusion term \(f\) is zero, then the scheme becomes a regular Crank-Nicolson scheme:
+\[
+U_m^{n+1} = U_m^n + \tfrac{r}{2}\delta_x^2\left(U_m^\star + U_m^n\right) = U_m^n + \tfrac{r}{2}\left(U_{m-1}^\star - 2U_m^\star + U_{m+1}^\star + U_{m-1}^n - 2U_m^n + U_{m+1}^n \right)
+\]

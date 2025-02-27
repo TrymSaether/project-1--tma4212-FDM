@@ -78,8 +78,6 @@ A fundamental concept in numerical methods is the local truncation error (LTE), 
   A scheme with global error $\mathcal{O}(h^p + k^q)$ is said to be convergent of order $(p,q)$.
 \end{definition}
 
-
-
 \subsection{Taylor Series Expansions}\label{sec:taylor_expansions}
 
 Taylor expansions form the backbone of finite difference approximations by allowing us to represent continuous derivatives as discrete differences. When we approximate a derivative using grid points, the accuracy depends on how many terms we retain in the expansion.
@@ -265,25 +263,25 @@ The second derivative operator $\delta_x^2$ can be represented by a tridiagonal 
 \begin{equation}
   D_2 = \frac{1}{h^2}
   \begin{bmatrix}
-    -2 & 1 & 0 & \cdots & 0 \\
-    1 & -2 & 1 & \cdots & 0 \\
-    0 & 1 & -2 & \ddots & \vdots \\
-    \vdots & \vdots & \ddots & \ddots & 1 \\
-    0 & 0 & \cdots & 1 & -2
+    -2     & 1      & 0      & \cdots & 0      \\
+    1      & -2     & 1      & \cdots & 0      \\
+    0      & 1      & -2     & \ddots & \vdots \\
+    \vdots & \vdots & \ddots & \ddots & 1      \\
+    0      & 0      & \cdots & 1      & -2
   \end{bmatrix}
 \end{equation}
 
 \paragraph{Crank-Nicolson Formulation}
 The Crank-Nicolson scheme can be expressed in two compact matrix steps:
 \begin{align}
-  (I - \frac{\mu k}{2h^2}D_2) \mathbf{U}^{\star} &= (I + \frac{\mu k}{2h^2}D_2 + akI) \mathbf{U}^n \tag{Predictor} \\
-  \mathbf{U}^{n+1} &= \mathbf{U}^{\star} + \frac{ak}{2}(\mathbf{U}^{\star} - \mathbf{U}^n) \tag{Corrector}
+  (I - \frac{\mu k}{2h^2}D_2) \mathbf{U}^{\star} & = (I + \frac{\mu k}{2h^2}D_2 + akI) \mathbf{U}^n \tag{Predictor}                       \\
+  \mathbf{U}^{n+1}                               & = \mathbf{U}^{\star} + \frac{ak}{2}(\mathbf{U}^{\star} - \mathbf{U}^n) \tag{Corrector}
 \end{align}
 
 \paragraph{Boundary Conditions}
 For Dirichlet boundary conditions $u(0,t) = g_0(t)$ and $u(L,t) = g_L(t)$, we directly set $U_0^n = g_0(t_n)$ and $U_M^n = g_L(t_n)$. This modifies our system to solve only for interior points, with boundary values appearing in the right-hand side.
 
-\paragraph{Efficient Solution}
+\paragraph{Algorithm}
 Since the coefficient matrix in the predictor step is tridiagonal, we can solve the system in $\mathcal{O}(M)$ operations using a tridiagonal solver instead of general matrix inversion:
 \begin{enumerate}
   \item Solve $(I - \frac{\mu k}{2h^2}D_2) \mathbf{U}^{\star} = \mathbf{b}^n$ for interior points: $\mathbf{b}^n = (I + \frac{\mu k}{2h^2}D_2 + akI) \mathbf{U}^n$
@@ -291,8 +289,148 @@ Since the coefficient matrix in the predictor step is tridiagonal, we can solve 
   \item Compute $\mathbf{U}^{n+1}$ using the corrector equation: $\mathbf{U}^{n+1} = \mathbf{U}^{\star} + \frac{ak}{2}(\mathbf{U}^{\star} - \mathbf{U}^n)$
   \item Update boundary values for next step: $U_0^{n+1} = g_0(t_{n+1})$, $U_M^{n+1} = g_L(t_{n+1})$
 \end{enumerate}
+\paragraph{Full Matrix Scheme}
+For the heat equation with reaction term $f(u) = au$, the Crank-Nicolson method can be formulated as a linear system. Let's define matrices $A$ and $B$ for the predictor step:
 
-This implementation balances computational efficiency with the accuracy and stability benefits of the Crank-Nicolson scheme.
+\begin{align}
+  A \mathbf{U}^\star & = B \mathbf{U}^n + \mathbf{g}^\star                                \\
+  \mathbf{U}^{n+1}   & = \mathbf{U}^\star + \frac{ak}{2}(\mathbf{U}^\star - \mathbf{U}^n)
+\end{align}
+
+where:
+
+\begin{align}
+  A & =
+  \begin{bmatrix}
+    1            & 0            & 0            & \cdots       & 0                           \\
+    -\frac{r}{2} & 1+r          & -\frac{r}{2} & \cdots       & 0                           \\
+    0            & -\frac{r}{2} & 1+r          & \ddots       & \vdots                      \\
+    \vdots       & \vdots       & \ddots       & \ddots       & -\frac{r}{2}                \\
+    0            & 0            & \cdots       & -\frac{r}{2} & 1+r          & -\frac{r}{2} \\
+    0            & 0            & \cdots       & 0            & 0            & 1
+  \end{bmatrix} \\
+  B & =
+  \begin{bmatrix}
+    1           & 0           & 0           & \cdots      & 0                         \\
+    \frac{r}{2} & 1-r+ak      & \frac{r}{2} & \cdots      & 0                         \\
+    0           & \frac{r}{2} & 1-r+ak      & \ddots      & \vdots                    \\
+    \vdots      & \vdots      & \ddots      & \ddots      & \frac{r}{2}               \\
+    0           & 0           & \cdots      & \frac{r}{2} & 1-r+ak      & \frac{r}{2} \\
+    0           & 0           & \cdots      & 0           & 0           & 1
+  \end{bmatrix}
+\end{align}
+
+and $\mathbf{g}^\star$ incorporates boundary conditions:
+
+\begin{align}
+  \mathbf{g}^\star =
+  \begin{bmatrix}
+    g_0(t_n) \\
+    0        \\
+    \vdots   \\
+    0        \\
+    g_L(t_n)
+  \end{bmatrix}
+\end{align}
+
+For interior points ($m = 1, 2, ..., M-1$), the predictor step expands to:
+\begin{align}
+  -\frac{r}{2}U_{m-1}^\star + (1+r)U_m^\star - \frac{r}{2}U_{m+1}^\star & = \frac{r}{2}U_{m-1}^n + (1-r+ak)U_m^n + \frac{r}{2}U_{m+1}^n
+\end{align}
+
+\paragraph{Corrector Matrix Form}
+The corrector step can be written in matrix form as:
+\begin{align}
+  \mathbf{U}^{n+1} & = C\mathbf{U}^\star - D\mathbf{U}^n
+\end{align}
+
+where $C = (1+\frac{ak}{2})I$ and $D = \frac{ak}{2}I$ are diagonal matrices:
+\begin{align}
+  \begin{bmatrix}
+    U_0^{n+1} \\
+    U_1^{n+1} \\
+    \vdots    \\
+    U_M^{n+1}
+  \end{bmatrix}
+   & =
+  \begin{bmatrix}
+    1+\frac{ak}{2} & 0              & \cdots & 0              \\
+    0              & 1+\frac{ak}{2} & \cdots & 0              \\
+    \vdots         & \vdots         & \ddots & \vdots         \\
+    0              & 0              & \cdots & 1+\frac{ak}{2}
+  \end{bmatrix}
+  \begin{bmatrix}
+    U_0^\star \\
+    U_1^\star \\
+    \vdots    \\
+    U_M^\star
+  \end{bmatrix}
+  -
+  \begin{bmatrix}
+    \frac{ak}{2} & 0            & \cdots & 0            \\
+    0            & \frac{ak}{2} & \cdots & 0            \\
+    \vdots       & \vdots       & \ddots & \vdots       \\
+    0            & 0            & \cdots & \frac{ak}{2}
+  \end{bmatrix}
+  \begin{bmatrix}
+    U_0^n  \\
+    U_1^n  \\
+    \vdots \\
+    U_M^n
+  \end{bmatrix}
+\end{align}
+
+After this computation, boundary conditions are applied:
+\begin{align}
+  U_0^{n+1} & = g_0(t_{n+1}) \\
+  U_M^{n+1} & = g_L(t_{n+1})
+\end{align}
+
+
+\paragraph{Computational Stencil}
+The stencil for the Crank-Nicolson scheme involves both the current time level $t_n$ and the intermediate level $t_{n+\frac{1}{2}}$:
+
+\begin{tikzpicture}[scale=1.0]
+  \draw[step=1cm,gray,very thin] (-2,-0.5) grid (2,1.5);
+
+  % Time levels
+  \draw[thick,->] (-2.5,0) -- (2.5,0) node[right] {$x$};
+  \draw[thick] (-2.5,0.5) -- (2.5,0.5);
+  \draw[thick] (-2.5,1) -- (2.5,1);
+
+  % Label time levels
+  \node[left] at (-2.5,0) {$t_n$};
+  \node[left] at (-2.5,0.5) {$t_\star$};
+  \node[left] at (-2.5,1) {$t_{n+1}$};
+
+  % Points at time level n
+  \fill[black] (-1,0) circle (0.1) node[below] {$U_{m-1}^n$};
+  \fill[black] (0,0) circle (0.1) node[below] {$U_m^n$};
+  \fill[black] (1,0) circle (0.1) node[below] {$U_{m+1}^n$};
+
+  % Points at time level n+1 (predictor)
+  \fill[red] (-1,0.5) circle (0.1) node[right] {$U_{m-1}^\star$};
+  \fill[red] (0,0.5) circle (0.1) node[right] {$U_m^\star$};
+  \fill[red] (1,0.5) circle (0.1) node[right] {$U_{m+1}^\star$};
+
+  % Final point
+  \fill[blue] (0,1) circle (0.1) node[above] {$U_m^{n+1}$};
+
+  % Arrows showing dependencies
+  \draw[->, thick, black] (-1,0) -- (-1,0.4);
+  \draw[->, thick, black] (0,0) -- (0,0.4);
+  \draw[->, thick, black] (1,0) -- (1,0.4);
+
+  \draw[->, thick, red] (-1,0.5) -- (0,0.9);
+  \draw[->, thick, red] (0,0.5) -- (0,0.9);
+  \draw[->, thick, red] (1,0.5) -- (0,0.9);
+
+  % Labels
+  \node[anchor=west] at (2.5,0.5) {Predictor};
+  \node[anchor=west] at (2.5,1) {Corrector};
+\end{tikzpicture}
+
+The scheme requires solving a tridiagonal system in the predictor step, followed by an explicit update in the corrector step. This combination delivers second-order accuracy in both time and space while maintaining unconditional stability.
 
 \subsection{Error Analysis}
 Given the function \(f(u) = au\) for constant \(a\), we first want to analyze the consistency of the Crank-Nicolson scheme by determining the local truncation error (LTE).
@@ -351,40 +489,6 @@ To determine the consistency of the Crank-Nicolson scheme for the heat equation 
     \|\tau_m^{n+1}\| = \mathcal{O}(h^2 + k^2)
   \end{align*}
 \end{proof}
-\subsubsection{Stability (von Neumann)}
-The Von Neumann stability analysis is a method to determine the stability of a finite difference scheme by analyzing the growth of errors in the Fourier modes of the solution.
-\begin{theorem}{Stability of the Crank-Nicolson scheme}{stability_cn}
-  The Crank-Nicolson scheme is stable for the heat equation with linear reaction term \(f(u) = au\) if:
-  \[
-    ka \leq 0.618 \quad \text{and} \quad \frac{\mu k}{h^2}(\cos\beta - 1) \leq 0
-  \]
-  Under these conditions, the amplification factor satisfies \(\norm{\xi} \leq 1\).
-\end{theorem}
-\begin{proof}[Proof of Theorem~\ref{thm:stability_cn}]
-  Let \(U_m^n = \xi^n e^{i m \beta}\) be the Fourier mode of the numerical solution at grid point \((x_m, t_n)\), where \(\xi=\dfrac{\xi^{n+1}}{\xi^n}\) is the amplification factor and \(\beta\) is the wave number.
-  For the first step of the Crank-Nicolson scheme, we have:
-  \begin{align*}
-    U_m^\star               & = U_m^n + \dfrac{r}{2} (\delta_x^2 U_m^\star + \delta_x^2 U_m^n) + k a U_m^n                                                                     \\
-    \xi^\star e^{i m \beta} & = \xi^n e^{i m \beta} + \dfrac{r}{2} \left(\xi^\star + \xi^n\right)\left(e^{i\beta} - 2 + e^{-i\beta}\right)e^{im\beta}+ k a \xi^n e^{i m \beta} \\
-    \xi^\star               & = \xi^n + \dfrac{r}{2} \left(\xi^\star + \xi^n \right)\overbrace{\left(e^{i \beta} - 2 + e^{-i \beta}\right)}^{2\cos\beta - 2} + k a \xi^n       \\
-    \xi^\star               & = (1 + r(\cos\beta - 1) + ka) \xi^n + r(\cos\beta - 1)\xi^\star                                                                                  \\
-    \xi^\star               & = \dfrac{1 + \alpha + \sigma}{1 - \sigma} \xi^n \quad \text{where } \alpha = ka, \sigma = r(\cos\beta - 1)
-  \end{align*}
-  Then, for the second step, we get:
-  \begin{align*}
-    U_m^{n+1}               & = U_m^\star + \tfrac{\alpha}{2}(U_m^\star - U_m^n)                                                                      \\
-    \xi^{n+1} e^{i m \beta} & = \xi^\star e^{i m \beta} + \tfrac{\alpha}{2}(\xi^\star - \xi^n)e^{i m \beta}                                           \\
-    \xi^{n+1}               & = (1 + \tfrac{\alpha}{2}) \xi^\star - \tfrac{\alpha}{2} \xi^n                                                           \\
-    \xi^{n+1}               & = \left(1 + \tfrac{\alpha}{2}\right)\left(\tfrac{1 + \alpha + \sigma}{1 - \sigma}\right)\xi^n - \tfrac{\alpha}{2} \xi^n \\
-    \xi                     & = \tfrac{\xi^{n+1}}{\xi^n} = -\dfrac{\alpha^2 + 2(\alpha + 1) (\sigma + 1)}{2 (\sigma - 1)} \tag{Source: Trust me bro}
-  \end{align*}
-  Furthermore, we can now find a bound for the amplification factor:
-  \begin{align*}
-    \norm*{\xi}                                    & = \norm*{-\dfrac{\alpha^2 + 2(\alpha + 1)(\sigma + 1)}{2(\sigma - 1)}} \leq \dfrac{\alpha^2}{2\underbrace{\abs*{\sigma - 1}}_{\geq 1}} + \dfrac{(\alpha + 1)\overbrace{\abs*{\sigma + 1}}^{\leq 1}}{2\underbrace{\abs{\sigma - 1}}_{\geq 1}} \leq \dfrac{\alpha^2+ \alpha + 1}{2} \leq 1 \\                                                                                                                                                                                                                     \\
-    \tfrac{1}{2}\left(\alpha^2 + \alpha - 1\right) & \leq 0 \Rightarrow \alpha_{1,2} = \tfrac{1}{2}\left(-1 \pm \sqrt{5}\right) \approx -1.618, 0.618 \Rightarrow \alpha \leq 0.618                                                                                                                                                           \\
-    \norm*{\xi}                                    & \leq 1 \implies \alpha \leq 0.618 \text{ and } \sigma = \frac{\mu k}{h^2}(\cos\beta - 1) \leq 0 \tag{Stability}
-  \end{align*}
-\end{proof}
 
 \subsubsection{Stability (Von Neumann)}
 \begin{theorem}{von Neumann Stability for Crank--Nicolson}{von_neumann_cn}
@@ -420,12 +524,12 @@ The Von Neumann stability analysis is a method to determine the stability of a f
     \xi & = \frac{\left(1 - r\sin^2(\beta h/2) + ka\right)\left(1 + \frac{ka}{2}\right) - \frac{ka}{2}\left(1 + 2r\sin^2(\beta h/2)\right)}{1 + 2r\sin^2(\beta h/2)}
   \end{align*}
 
-  After algebraic simplification:
+  After algebraic simplification, and substituting $s = \sin^2(\beta h/2)$:
   \begin{align*}
-    \xi & = \frac{1 - r\sin^2(\beta h/2)(1 + \frac{3ka}{2}) + ka + \frac{k^2a^2}{2}}{1 + 2r\sin^2(\beta h/2)}
+    \xi & = \frac{1 - rs(1 + \tfrac{3}{2}ka) + ka + \tfrac{1}{2}k^2a^2}{1 + 2rs}
   \end{align*}
 
-  Setting $s = \sin^2(\beta h/2) \in [0,1]$, for $a \geq 0$ and any $r > 0$, both numerator and denominator are positive with $\xi(s) < 1$ for all $s \in [0,1]$.
+  Then for $a \geq 0$ and any $r > 0$, both numerator and denominator are positive with $\xi(s) < 1$ for all $s \in [0,1]$.
 
   \medskip
 
@@ -442,7 +546,6 @@ The Von Neumann stability analysis is a method to determine the stability of a f
   Therefore, $|\xi| \leq 1 + Ck$ with $C = |a|(1 + |a|k/2) \approx |a|$ for small $k$, confirming the scheme is unconditionally stable.
 \end{proof}
 
-
 \subsubsection{Convergence}
 \begin{theorem}{Lax Equivalence and Convergence of Crank--Nicolson}{cn_convergence}
   Since the Crank--Nicolson scheme is both consistent and stable, by the Lax Equivalence Theorem (Theorem~\ref{thm:lax}), it is convergent. Under the parabolic scaling $k \sim h^2$, the scheme achieves second-order convergence:
@@ -458,3 +561,4 @@ The Von Neumann stability analysis is a method to determine the stability of a f
 \end{remark}
 
 \subsection{Numerical Experiments}
+
