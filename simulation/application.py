@@ -4,26 +4,30 @@ from matplotlib.animation import FuncAnimation
 from scipy.sparse import diags, coo_matrix, eye, kron
 
 class SIR:
-    def __init__(self, beta, gamma, muS, muI, N):
-        self.N = N        
+    def __init__(self, beta, gamma, muS, muI, n):
+        self.n = n
+        self.N = (n + 1) ** 2
         self.beta = beta
         self.gamma = gamma
         self.muS = muS
         self.muI = muI
-        self.dn = 1.0 / N
+        self.dn = 1.0 / n
+ 
         
-        self.L = self.laplacian(N, self.dn)
-        self.S = np.ones((N + 1, N + 1))
-        self.I = np.zeros((N + 1, N + 1))
+        self.L = self.laplacian(n, self.dn)
+        self.S = np.ones(self.N)
+        self.I = np.zeros(self.N)
         
-        self.x = self.y = np.arange(N + 1) * self.dn
+        self.x = self.y = np.arange(n + 1) * self.dn
         self.X, self.Y = np.meshgrid(self.x, self.y)
+        self.X, self.Y = self.X.flatten(), self.Y.flatten()
     
-    def laplacian(N, dn):
-        diag = -2 * np.ones(N + 1)
+    @staticmethod
+    def laplacian(n, dn):
+        diag = -2 * np.ones(n + 1)
         diag[0] = diag[-1] = -1
-        off = np.ones(N)
-        L = diags([off, diag, off], [-1, 0, 1], shape=(N + 1, N + 1))/ dn**2
+        off = np.ones(n)
+        L = diags([off, diag, off], [-1, 0, 1], shape=(n + 1, n + 1))/ dn**2
         I = eye(N + 1)
         return kron(I, L) + kron(L, I)
     
@@ -34,8 +38,8 @@ class SIR:
         return dS_react, dI_react
 
     def diffusion(self, L, S, I):
-        dS_diff = L* S
-        dI_diff = L * I
+        dS_diff = L*S
+        dI_diff = L*I
         return dS_diff, dI_diff
     
     def set_infection(self, x0, y0, r, rate):       
@@ -45,77 +49,43 @@ class SIR:
     
     def simulate(self, dt, tf, snapshot_stride=1):
         T = int(tf / dt) 
-        S_list, I_list, times = [], [], []
+        Sd, Id, t = [], [], []
         for n in range(T + 1):
             if n % snapshot_stride == 0:
-                S_list.append(self.S.copy())
-                I_list.append(self.I.copy())
-                times.append(n * dt)
+                Sd.append(self.S.copy())
+                Id.append(self.I.copy())
+                t.append(n * dt)
             
             dS_react, dI_react = self.reaction(self.S, self.I)
             dS_diff, dI_diff = self.diffusion(self.L, self.S, self.I)
 
             self.S += dt * (dS_react + self.muS * dS_diff)
             self.I += dt * (dI_react + self.muI * dI_diff)
-
-        return S_list, I_list, times
+        
+        X, Y = self.get_grid()
+        return (Sd, Id), (X, Y), t
+                
     def get_grid(self):
-        return self.X, self.Y
-
-def _build_laplacian(Mx, My, dx, dy):
-    """Construct the 2D Laplacian matrix with Neumann boundary conditions."""
-    Nx = (Mx + 1) * (My + 1)
-
-    def idx(i, j):
-        return i * (My + 1) + j
-
-    cx = 1.0 / dx**2
-    cy = 1.0 / dy**2
-
-    data, row, col = [], [], []
-
-    for i in range(Mx + 1):
-        for j in range(My + 1):
-            center = idx(i, j)
-
-            # Start with diagonal term
-            diag = 0
-
-            # Handle x-direction connections
-            if i > 0:  # Has left neighbor
-                row.append(center)
-                col.append(idx(i - 1, j))
-                data.append(cx)
-                diag -= cx
-
-            if i < Mx:  # Has right neighbor
-                row.append(center)
-                col.append(idx(i + 1, j))
-                data.append(cx)
-                diag -= cx
-
-            # Handle y-direction connections
-            if j > 0:  # Has bottom neighbor
-                row.append(center)
-                col.append(idx(i, j - 1))
-                data.append(cy)
-                diag -= cy
-
-            if j < My:  # Has top neighbor
-                row.append(center)
-                col.append(idx(i, j + 1))
-                data.append(cy)
-                diag -= cy
-
-            # Add diagonal term
-            row.append(center)
-            col.append(center)
-            data.append(diag)
-
-    return coo_matrix((data, (row, col)), shape=(Nx, Nx)).tocsr()
+        X = self.X.reshape((self.n+1, self.n+1))
+        Y = self.Y.reshape((self.n+1, self.n+1))
+        return X, Y
+        
+    def get_solution(self):
+        return self.Sd, self.Id, self.t
+    
+    def get_L(self):
+        return self.L
+    
+    def plot_L(self):
+        plt.imshow(self.L.toarray()*self.dn**2, cmap="plasma")
+        plt.colorbar()
+        plt.title("Laplacian Matrix")
+        plt.show()
 
 
-N = 50
+
+
+N = 5
 tf = 30
 dt = 0.001
 
@@ -125,17 +95,20 @@ gamma = 1
 muS = 0.001
 muI = 0.001
 
+
 model = SIR(beta, gamma, muS, muI, N)
 model.set_infection(x0=0.5, y0=0.5, r=0.1, rate=0.01)
+model.plot_L()
+(S, I), (X, Y), t = model.simulate(dt=0.001, tf=30, snapshot_stride=10)
+I_2d = I[0].reshape((N + 1, N + 1))
 
-X, Y = model.get_grid()
-S, I, t = model.simulate(dt=0.001, tf=10, snapshot_stride=10)
+fig = plt.figure(figsize=(10, 8), dpi=150)
 
-fig = plt.figure(figsize=(10, 10), dpi=300)
 ax = fig.add_subplot(111, projection="3d")
-surf = ax.plot_surface(X, Y, I, cmap="plasma")
+surf = ax.plot_surface(X, Y, I_2d, cmap="plasma", edgecolor="none")
+
 ax.set_title(f"Infected, t={t[0]:.3f}")
-ax.set_xlabel("$x$"); ax.set_ylabel("$y$"); ax.set_zlabel("$I \%$")
+ax.set_xlabel("$x$"); ax.set_ylabel("$y$"); ax.set_zlabel("$I \\%$")
 
 current_surf = [surf]
 
@@ -165,4 +138,5 @@ def update(frame):
 
 anim = FuncAnimation(fig, update, frames=len(I), init_func=init, blit=False, interval=1, repeat=True)
 plt.show()
+
 # anim.save("3D_infected_animation.mp4", fps=30, extra_args=["-vcodec", "libx264"])
