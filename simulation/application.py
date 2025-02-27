@@ -72,59 +72,6 @@ class SIR:
         
     def get_solution(self):
         return self.Sd, self.Id, self.t
-        
-def _build_laplacian(Mx, My, dx, dy):
-    """Construct the 2D Laplacian matrix with Neumann boundary conditions."""
-    Nx = (Mx + 1) * (My + 1)
-
-    def idx(i, j):
-        return i * (My + 1) + j
-
-    cx = 1.0 / dx**2
-    cy = 1.0 / dy**2
-
-    data, row, col = [], [], []
-
-    for i in range(Mx + 1):
-        for j in range(My + 1):
-            center = idx(i, j)
-
-            # Start with diagonal term
-            diag = 0
-
-            # Handle x-direction connections
-            if i > 0:  # Has left neighbor
-                row.append(center)
-                col.append(idx(i - 1, j))
-                data.append(cx)
-                diag -= cx
-
-            if i < Mx:  # Has right neighbor
-                row.append(center)
-                col.append(idx(i + 1, j))
-                data.append(cx)
-                diag -= cx
-
-            # Handle y-direction connections
-            if j > 0:  # Has bottom neighbor
-                row.append(center)
-                col.append(idx(i, j - 1))
-                data.append(cy)
-                diag -= cy
-
-            if j < My:  # Has top neighbor
-                row.append(center)
-                col.append(idx(i, j + 1))
-                data.append(cy)
-                diag -= cy
-
-            # Add diagonal term
-            row.append(center)
-            col.append(center)
-            data.append(diag)
-
-    return coo_matrix((data, (row, col)), shape=(Nx, Nx)).tocsr()
-
 
 N = 50
 tf = 30
