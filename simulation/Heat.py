@@ -55,6 +55,7 @@ class HeatSolver:
                 for i in range(1, M):
                     b[i-1] = (1 - r) * U_n[i] + (r/2) * (U_n[i+1] + U_n[i-1]) + k * self.a * U_n[i]
             else:
+                U_new = np.zeros(M+1)
                 b = np.zeros(M-1)
                 for i in range(1, M):
                     b[i-1] = (1 - r) * U[i] + (r/2) * (U[i+1] + U[i-1]) + k * self.a * U[i]

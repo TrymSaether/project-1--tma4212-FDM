@@ -1,44 +1,154 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from mpl_toolkits.mplot3d import Axes3D
-from scipy.sparse import coo_matrix, csr_matrix
+from scipy.sparse import diags, coo_matrix, eye, kron
 
+class SIR:
+    def __init__(self, beta, gamma, muS, muI, N):
+        self.N = N        
+        self.beta = beta
+        self.gamma = gamma
+        self.muS = muS
+        self.muI = muI
+        self.dn = 1.0 / N
+        
+        self.L = self.laplacian(N, self.dn)
+        self.S = np.ones((N + 1, N + 1))
+        self.I = np.zeros((N + 1, N + 1))
+        
+        self.x = self.y = np.arange(N + 1) * self.dn
+        self.X, self.Y = np.meshgrid(self.x, self.y)
+    
+    def laplacian(N, dn):
+        diag = -2 * np.ones(N + 1)
+        diag[0] = diag[-1] = -1
+        off = np.ones(N)
+        L = diags([off, diag, off], [-1, 0, 1], shape=(N + 1, N + 1))/ dn**2
+        I = eye(N + 1)
+        return kron(I, L) + kron(L, I)
+    
+    def reaction(self, S, I):
+        inf_term = self.beta * S * I
+        dS_react = -inf_term
+        dI_react = inf_term - self.gamma * I
+        return dS_react, dI_react
+
+    def diffusion(self, L, S, I):
+        dS_diff = L.dot(S)
+        dI_diff = L.dot(I)
+        return dS_diff, dI_diff
+    
+    def set_infection(self, x0, y0, r, rate):       
+        mask = ((self.X - x0)**2 + (self.Y - y0)**2) < r**2
+        self.I[mask] = rate
+        self.S[mask] = 1.0 - rate
+    
+    def simulate(self, dt, tf, snapshot_stride=1):
+        T = int(tf / dt) 
+        S_list, I_list, times = [], [], []
+        for n in range(T + 1):
+            if n % snapshot_stride == 0:
+                S_list.append(self.S.copy())
+                I_list.append(self.I.copy())
+                times.append(n * dt)
+            
+            dS_react, dI_react = self.reaction(self.S, self.I)
+            dS_diff, dI_diff = self.diffusion(self.L, self.S.flatten(), self.I.flatten())
+
+            self.S += dt * (dS_react + self.muS * dS_diff).reshape((self.N + 1, self.N + 1))
+            self.I += dt * (dI_react + self.muI * dI_diff).reshape((self.N + 1, self.N + 1))
+
+        return S_list, I_list, times
+
+        
+    
+
+    
+def laplacian(N, dn):
+    diag = -2 * np.ones(N + 1)
+    diag[0] = diag[-1] = -1
+    off = np.ones(N)
+    L = diags([off, diag, off], [-1, 0, 1], shape=(N + 1, N + 1))/ dn**2
+    I = eye(N + 1)
+    return kron(I, L) + kron(L, I)
+
+M = 5
+dm = 1.0 / M
+
+plt.imshow(laplacian(M, dm).todense(), cmap="plasma")
+plt.colorbar()
+plt.show()
 
 def _build_laplacian(Mx, My, dx, dy):
-    """Construct the 2D Laplacian matrix with frozen boundary conditions.
-    
-    This function builds a Laplacian using a 5-point stencil on a grid of size (Mx+1) x (My+1),
-    with Neumann-like (frozen) conditions at the boundaries.
-    """
+    """Construct the 2D Laplacian matrix with Neumann boundary conditions."""
     Nx = (Mx + 1) * (My + 1)
-    
-    def flatten(i, j):
+
+    def idx(i, j):
         return i * (My + 1) + j
 
     cx = 1.0 / dx**2
     cy = 1.0 / dy**2
 
-    rw, cl, data = [], [], []
+    data, row, col = [], [], []
+
     for i in range(Mx + 1):
         for j in range(My + 1):
-            cur = flatten(i, j)
-            # Frozen boundary: set row to zeros
-            if i == 0 or i == Mx or j == 0 or j == My:
-                rw.append(cur)
-                cl.append(cur)
-                data.append(0.0)
-            else:
-                # Center point
-                rw.append(cur)
-                cl.append(cur)
-                data.append(-2 * (cx + cy))
-                # Adjacent points contributions
-                for di, dj, coeff in [(-1, 0, cx), (1, 0, cx), (0, -1, cy), (0, 1, cy)]:
-                    rw.append(cur)
-                    cl.append(flatten(i + di, j + dj))
-                    data.append(coeff)
-    return coo_matrix((data, (rw, cl)), shape=(Nx, Nx)).tocsr()
+            center = idx(i, j)
+
+            # Start with diagonal term
+            diag = 0
+
+            # Handle x-direction connections
+            if i > 0:  # Has left neighbor
+                row.append(center)
+                col.append(idx(i - 1, j))
+                data.append(cx)
+                diag -= cx
+
+            if i < Mx:  # Has right neighbor
+                row.append(center)
+                col.append(idx(i + 1, j))
+                data.append(cx)
+                diag -= cx
+
+            # Handle y-direction connections
+            if j > 0:  # Has bottom neighbor
+                row.append(center)
+                col.append(idx(i, j - 1))
+                data.append(cy)
+                diag -= cy
+
+            if j < My:  # Has top neighbor
+                row.append(center)
+                col.append(idx(i, j + 1))
+                data.append(cy)
+                diag -= cy
+
+            # Add diagonal term
+            row.append(center)
+            col.append(center)
+            data.append(diag)
+
+    return coo_matrix((data, (row, col)), shape=(Nx, Nx)).tocsr()
+
+
+M = 5
+N = 5
+dx = 1.0 / M
+dn = dy = 1.0 / N
+
+L1 = laplacian(N,dn)
+L2 = _build_laplacian(M, N, dx, dy)
+fig, ax = plt.subplots(1, 2, figsize=(10, 5))
+im0 = ax[0].imshow(L1.todense(), cmap="plasma")
+ax[0].set_title("Laplacian using kronecker")
+plt.colorbar(im0, ax=ax[0])
+
+im1 = ax[1].imshow(L2.todense(), cmap="plasma")
+ax[1].set_title("Laplacian using sparse matrix")
+plt.colorbar(im1, ax=ax[1])
+
+plt.show()
 
 
 def simulate_sir_diffusion_2d_fast(
@@ -61,15 +171,15 @@ def simulate_sir_diffusion_2d_fast(
     Nx = (Mx + 1) * (My + 1)
     Nsteps = int(T / dt)
 
-    L = _build_laplacian(Mx, My, dx, dy)
-    
+    L = laplacian(Mx, dx)
+
     def idx(i, j):
         return i * (My + 1) + j
 
     # Initialize S, I
     S = np.zeros(Nx, dtype=float)
     I = np.zeros(Nx, dtype=float)
-    
+
     # Initial conditions
     for i in range(Mx + 1):
         for j in range(My + 1):
@@ -78,8 +188,8 @@ def simulate_sir_diffusion_2d_fast(
             ycoord = y0 + j * dy
 
             # small circle of infection near center
-            if (xcoord - 0.5) ** 2 + (ycoord - 0.5) ** 2 < 0.01:
-                I[k] = 0.1
+            if (xcoord - 0.20) ** 2 + (ycoord - 0.20) ** 2 < 0.005:
+                I[k] = 0.01
                 S[k] = 1.0 - I[k]
             else:
                 I[k] = 0.0
@@ -95,13 +205,13 @@ def simulate_sir_diffusion_2d_fast(
                 I[k] = 0.5
                 S[k] = 1.0 - I[k]
 
-            # Neumann boundary conditions
-            if i == 0 or i == Mx or j == 0 or j == My:
-                S[k] = 0.0
-                I[k] = 0.0
-                
+    plt.imshow(I.reshape((Mx + 1, My + 1)), cmap="plasma")
+    plt.colorbar()
+    plt.title("Initial infected fraction")
+    plt.show()
+
     S_list, I_list, times = [], [], []
-    
+
     for n in range(Nsteps + 1):
         if n % snapshot_stride == 0:
             S_list.append(S.copy())
@@ -117,13 +227,16 @@ def simulate_sir_diffusion_2d_fast(
         dS_diff = L.dot(S)
         dI_diff = L.dot(I)
 
-        # Update
-        S += dt * (dS_react + muS * dS_diff)
-        I += dt * (dI_react + muI * dI_diff)
+        # # Update
+        # S += dt * (dS_react + muS * dS_diff)
+        # I += dt * (dI_react + muI * dI_diff)
+
+        S += dt * (-beta * S * I + muS * L * S)
+        I += dt * (beta * S * I - gamma * I + muI * L * I)
 
     return S_list, I_list, times, (Mx, My)
 
-    
+
 Mx = 50
 My = 50
 dt = 0.001
@@ -193,8 +306,6 @@ def update(frame):
     return current_surf
 
 
-anim = FuncAnimation(
-    fig, update, frames=len(I_list), init_func=init, blit=False, interval=1, repeat=True
-)
+anim = FuncAnimation(fig, update, frames=len(I_list), init_func=init, blit=False, interval=1, repeat=True)
 plt.show()
 # anim.save("3D_infected_animation.mp4", fps=30, extra_args=["-vcodec", "libx264"])
