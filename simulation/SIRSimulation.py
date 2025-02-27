@@ -61,20 +61,19 @@ class SIRSimulation:
 
     def beta_function(self, t):
         dist_to_center = (self.X - self.L / 2)**2 + (self.Y - self.L / 2)**2
-        spatial_factor = 1 + np.exp(-10 * dist_to_center)  # Higher in center
+        spatial_factor = 1 + np.exp(-50 * dist_to_center)  # Higher in center
 
         if 2 <= t <= 2+np.pi:
-            time_factor = 1 + np.sin(t-2.5)  # Fluctuates with time
+            time_factor = 1 + 0.5 * np.sin(t-2)  # Fluctuates with time
         else:
-            time_factor = 0
+            return self.beta
 
-        return self.beta * spatial_factor * time_factor #* moving_hotspot
+        return (self.beta * spatial_factor * time_factor).ravel() #* moving_hotspot
 
 
     def step(self, t):
         if self.db:
-            beta = self.beta_function(t).ravel()
-            print(f'{beta.shape}')
+            beta = self.beta_function(t)
         else:
             beta = self.beta
 
