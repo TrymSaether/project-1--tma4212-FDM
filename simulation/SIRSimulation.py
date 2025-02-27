@@ -33,7 +33,7 @@ class SIRSimulation:
     
     def initial_condition(self):
         if self.n == 0:  # 3 random infection areas
-            cx, cy = np.random.uniform(0.2, 0.8, 3) * self.L, np.random.uniform(0.2, 0.8, 3) * self.L
+            cx, cy = np.random.uniform(0.1, 0.9, 3) * self.L, np.random.uniform(0.1, 0.9, 3) * self.L
             X_flat, Y_flat = self.X.ravel(), self.Y.ravel()
             distances = np.min((X_flat[:, None] - cx) ** 2 + (Y_flat[:, None] - cy) ** 2, axis=1)
             self.I[distances < 0.009] = self.ii
@@ -76,7 +76,6 @@ class SIRSimulation:
         self.R += self.dt * dR
 
 
-
     def show_initial(self):
         plt.imshow(self.I.reshape(self.M, self.M))
         plt.show()
@@ -103,4 +102,3 @@ class SIRSimulation:
 
 sim = SIRSimulation()
 sim.show_initial()
-sim.animate()
