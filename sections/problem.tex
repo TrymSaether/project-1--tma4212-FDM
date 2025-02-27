@@ -5,15 +5,22 @@ In this project, we will study reaction-diffusion equations. Such equations are 
   u_t = \mu u_{xx} + f(u),
 \end{equation}
 
-where $\mu$ is some positive constant. 
+where $\mu$ is some positive constant.
 We will assume the reaction term $f(u)$ to be nonstiff, in the sense that explicit methods can be used to solve the ODE $u_t = f(u)$. As is well known, time-dependent PDEs with diffusion terms should be solved by implicit methods. Using implicit methods for solving the whole system requires solutions of nonlinear equations for each step, and we would all be happy to avoid that. One option would be to use an implicit method for the diffusion term and an explicit for the reaction.
 
 We will use constant step sizes $h$ in the $x$-direction, and $k$ in the $t$-direction, so that $x_{m+1} = x_m + h$ and $t_{n+1} = t_n + k$. A scheme based on forward and backward Euler, together with a central difference in space could be
+\begin{equation}
+  \frac{1}{k} \nabla_t U_m^{n+1}  = \frac{\mu}{h^2} \delta_x^2 U_m^{n+1} + f(U_m^n)
+\end{equation}
+Which written out could be:
+\begin{equation}
+  U_m^{n+1}  = U_m^n + r \left( U_{m+1}^{n+1} - 2 U_m^{n+1} + U_{m-1}^{n+1} \right) + k f(U_m^n), \quad r = \frac{\mu k}{h^2}
+\end{equation}
+
+We now propose the following modification of the Crank-Nicolson scheme:
 \begin{align*}
-  \frac{1}{k} \nabla_t U_m^{n+1} & = \frac{\mu}{h^2} \delta_x^2 U_m^{n+1} + f(U_m^n)                                                                \\
-  U_m^{n+1}                      & = U_m^n + r \left( U_{m+1}^{n+1} - 2 U_m^{n+1} + U_{m-1}^{n+1} \right) + k f(U_m^n), \quad r = \frac{\mu k}{h^2} \\[2ex]
-  U_m^*                          & = U_m^n + r \left( \frac{1}{2} \delta_x^2 U_m^* + \frac{1}{2} \delta_x^2 U_m^n \right) + k f(U_m^n)              \\
-  U_m^{n+1}                      & = U_m^* + \frac{k}{2} \left( f(U_m^*) - f(U_m^n) \right).
+  U_m^*     & = U_m^n + r \left( \frac{1}{2} \delta_x^2 U_m^* + \frac{1}{2} \delta_x^2 U_m^n \right) + k f(U_m^n) \\
+  U_m^{n+1} & = U_m^* + \frac{k}{2} \left( f(U_m^*) - f(U_m^n) \right).
 \end{align*}
 
 For pure diffusion ($f = 0$), this is nothing but the usual Crank-Nicolson scheme, and for a pure reaction equation ($\mu = 0$), it is nothing but a second-order explicit Runge-Kutta method.
