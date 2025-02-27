@@ -23,11 +23,11 @@ class SIR:
         self.X, self.Y = self.X.flatten(), self.Y.flatten()
     
     @staticmethod
-    def laplacian(N, dn):
-        diag = -2 * np.ones(N + 1)
+    def laplacian(n, dn):
+        diag = -2 * np.ones(n + 1)
         diag[0] = diag[-1] = -1
-        off = np.ones(N)
-        L = diags([off, diag, off], [-1, 0, 1], shape=(N + 1, N + 1))/ dn**2
+        off = np.ones(n)
+        L = diags([off, diag, off], [-1, 0, 1], shape=(n + 1, n + 1))/ dn**2
         I = eye(N + 1)
         return kron(I, L) + kron(L, I)
     
@@ -72,8 +72,20 @@ class SIR:
         
     def get_solution(self):
         return self.Sd, self.Id, self.t
+    
+    def get_L(self):
+        return self.L
+    
+    def plot_L(self):
+        plt.imshow(self.L.toarray()*self.dn**2, cmap="plasma")
+        plt.colorbar()
+        plt.title("Laplacian Matrix")
+        plt.show()
 
-N = 50
+
+
+
+N = 5
 tf = 30
 dt = 0.001
 
@@ -83,9 +95,10 @@ gamma = 1
 muS = 0.001
 muI = 0.001
 
+
 model = SIR(beta, gamma, muS, muI, N)
 model.set_infection(x0=0.5, y0=0.5, r=0.1, rate=0.01)
-
+model.plot_L()
 (S, I), (X, Y), t = model.simulate(dt=0.001, tf=30, snapshot_stride=10)
 I_2d = I[0].reshape((N + 1, N + 1))
 
