@@ -61,7 +61,8 @@ class Heat:
             T = int(self.k / tf)
         I = eye(self.N)
         
-        A = factorized((I - (self.r / 2) * self.L).tocsc())
+        # A = factorized((I - (self.r / 2) * self.L).tocsc())
+        A = I - (self.r / 2) * self.L
         B = I + (self.r / 2) * self.L + (self.k * self.a) * I
     
         self.U = self.set_BC(self.U, 0)
@@ -74,7 +75,7 @@ class Heat:
     
             # Predictor
             b = B @ self.U
-            U_ = A(b)
+            U_ = spsolve(A, b)
             U_ = self.set_BC(U_, n * self.k)
 
             # Corrector
@@ -184,150 +185,11 @@ class Heat:
             repeat=True,
         )
         plt.tight_layout()
-        return fig, anim
+        plt.show()
+        return anim
 
 
-def g0(x, y, t): 
+def g0(x, y, t):
     return np.sin(np.pi * x) * np.sin(np.pi * y) * np.exp(-2 * np.pi**2 * t)
-
 def u0(x, y):
     return np.sin(np.pi * x) * np.sin(np.pi * y)
-
-
-def heat_example_1(Heat, g0, u0):
-    mu = 1.0
-    a = 1.0
-
-    heat = Heat(mu=1.0, a=1.0, n=75, g=g0)
-    heat.set_IC(u0)
-    U_snapshots, t = heat.simulate(tf=10.0, snapshot_stride=1)
-    fig, ax = heat.plot_solution(t_idx=0, U_snapshots=U_snapshots, t=t)
-    heat.animate_solution(U_snapshots, t)
-    
-    return fig, ax
-    
-
-def heat_error_analysis_1(Heat, g0, u0):
-    n = 25
-    a_l = np.linspace(-1, 1, 5)
-    mu_l = np.linspace(0.1, 3, 5)
-    k_l = [0.001, 0.001, 0.01, 0.1, 1.0]
-
-    errors = np.zeros((len(a_l), len(mu_l), len(k_l)))
-    for i, a in enumerate(a_l):
-        for j, mu in enumerate(mu_l):
-            for k, k_ in enumerate(k_l):
-                heat = Heat(mu=mu, a=a, g=g0, n=n)
-                heat.set_IC(u0)
-                heat.set_k(k_)
-                U_snapshots, t = heat.simulate(tf=1.0, snapshot_stride=1)
-                X, Y = heat.get_grid()
-                U_exact = g0(X, Y, 1.0)
-                errors[i, j, k] = np.linalg.norm(U_snapshots[-1] - U_exact.flatten())
-
-    n_a, n_mu = len(a_l), len(mu_l)
-
-    fig, ax = plt.subplots(n_a, n_mu, figsize=(n_mu * 5, n_a * 5))
-    for i in range(n_a):
-        for j in range(n_mu):
-            ax[i, j].plot(k_l, errors[i, j], marker="o")
-            ax[i, j].set_title(f"a={a_l[i]}, mu={mu_l[j]}")
-            ax[i, j].set_xscale("log")
-            ax[i, j].set_yscale("log")
-            ax[i, j].set_xlabel("k")
-            ax[i, j].set_ylabel("Error")
-        
-    plt.tight_layout()
-    
-    return fig, ax
-    
-
-def plot_over_time(Heat, g0, u0):
-    heat = Heat(mu=1.0, a=1.0, n=25, g=g0)
-    heat.set_IC(u0)
-    U_snapshots, t = heat.simulate(tf=10.0, snapshot_stride=10)
-    
-    # Get center point values over time
-    center_idx = heat.n // 2
-    center_values = [U.reshape((heat.n + 1, heat.n + 1))[center_idx, center_idx] 
-                    for U in U_snapshots]
-
-    fig, ax = plt.subplots(figsize=(10, 8))
-    ax.plot(t, center_values, marker='o')
-    
-    ax.set_title("Heat Equation Solution at Center Point Over Time")
-    ax.set_xlabel("t")
-    ax.set_ylabel("u(0.5, 0.5, t)")
-    
-    plt.tight_layout()
-    return fig, ax
-
-def plot_over_space(Heat, g0, u0):
-    heat = Heat(mu=1.0, a=1.0, n=25, g=g0)
-    heat.set_IC(u0)
-    U_snapshots, t = heat.simulate(tf=10.0, snapshot_stride=10)
-    
-    # Get solution along y=0.5 for different times
-    mid_y = heat.n // 2
-    x = heat.x
-    
-    fig, ax = plt.subplots(figsize=(10, 8))
-    for i in range(0, len(t), len(t)//5):
-        U = U_snapshots[i].reshape((heat.n + 1, heat.n + 1))
-        ax.plot(x, U[mid_y, :], marker='o', label=f't={t[i]:.2f}')
-    
-    ax.set_title("Heat Equation Solution Along y=0.5")
-    ax.set_xlabel("x")
-    ax.set_ylabel("u(x, 0.5, t)")
-    ax.legend()
-    
-    plt.tight_layout()
-    return fig, ax
-
-def test_different_parameters(Heat, g0, u0):
-    mu_l = np.linspace(0.1, 3, 5)
-    a_l = np.linspace(-1, 1, 5)
-    k_l = [0.001, 0.01, 0.1, 0.5, 1.0]
-
-    fig, ax = plt.subplots(len(mu_l), len(a_l), figsize=(len(a_l) * 5, len(mu_l) * 5))
-    for i, mu in enumerate(mu_l):
-        for j, a in enumerate(a_l):
-            heat = Heat(mu=mu, a=a, n=25, g=g0)
-            heat.set_IC(u0)
-            
-            # Create legend handles for the k values
-            for k_, color in zip(k_l, ["r", "g", "b", "c", "m"]):
-                heat.set_k(k_)
-                U_snapshots, t = heat.simulate(tf=1.0, snapshot_stride=1)
-                
-                # Get center point values
-                center_idx = heat.n // 2
-                center_values = [U.reshape((heat.n + 1, heat.n + 1))[center_idx, center_idx] 
-                               for U in U_snapshots]
-                
-                ax[i, j].plot(t, center_values, marker="o", color=color, 
-                             label=f"k={k_}", markersize=2)
-            
-            ax[i, j].set_title(f"$\\mu={mu:.2f}, a={a:.2f}$")
-            ax[i, j].set_xlabel("$t$")
-            ax[i, j].set_ylabel("u(0.5, 0.5, t)")
-            if i == 0 and j == 0:  # Only show legend for first plot
-                ax[i, j].legend(fontsize=8)
-    
-    plt.tight_layout()
-    return fig, ax
-
-
-def main():
-    heat_example_1(Heat, g0, u0)
-    heat_error_analysis_1(Heat, g0, u0)
-    plot_over_time(Heat, g0, u0)
-    plot_over_space(Heat, g0, u0)
-    test_different_parameters(Heat, g0, u0)
-    plt.show()
-    
-if __name__ == "__main__":
-    main()
-
-
-
