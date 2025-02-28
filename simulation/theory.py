@@ -518,7 +518,6 @@ def error_vs_timestep():
     plt.savefig('error_vs_timestep.png', dpi=300, bbox_inches='tight')
     return fig
 
-
 def main():
     print("========== RUNNING THEORY VALIDATION ==========")
     print("Running convergence study to verify theoretical order...")
