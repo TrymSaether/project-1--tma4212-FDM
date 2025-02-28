@@ -1,4 +1,5 @@
 import numpy as np
+import time
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from scipy.sparse import diags, eye, kron
@@ -10,11 +11,11 @@ plt.style.use("science")
 
 
 class Heat:
-    def __init__(self, mu, a, g, n=25, h=None, k=None):
+    def __init__(self, mu, a, g, n=25):
         self.n = n
         self.N = (n + 1) ** 2
-        self.h = 1.0 / n if h is None else h
-        self.k = self.h**2 if k is None else k
+        self.h = 1.0 / n
+        self.k = 1.0 / n
         
         self.mu, self.a = mu, a
         self.r = mu * self.k / (self.h**2)
@@ -28,6 +29,7 @@ class Heat:
         self.U = np.zeros(self.N)
         self.L = self.laplacian(n)
 
+
     @staticmethod
     def laplacian(n):
         diag = -2 * np.ones(n + 1)
@@ -36,7 +38,7 @@ class Heat:
         Lh = diags([off, diag, off], [-1, 0, 1], shape=(n + 1, n + 1))
         Ih = eye(n + 1)
         return kron(Ih, Lh) + kron(Lh, Ih)
-
+    
     def set_BC(self, U, t=0):
         if np.shape(U) == (self.N,):
             U = U.reshape((self.n + 1, self.n + 1))
@@ -53,10 +55,10 @@ class Heat:
     def set_IC(self, u0):
         self.U = u0(self.Xf, self.Yf).flatten()
 
-    def simulate(self, tf=1.0, snapshot_stride=None):
-        if snapshot_stride is None:
-            snapshot_stride = int(1 / self.k)
+    def simulate(self, tf=1.0, snapshot_stride=1):
         T = int(tf / self.k)
+        if T < 1:
+            T = int(self.k / tf)
         I = eye(self.N)
         
         A = factorized((I - (self.r / 2) * self.L).tocsc())
@@ -99,7 +101,17 @@ class Heat:
 
     def set_k(self, k):
         self.k = k
-
+        
+    def set_h(self, h):
+        self.h = h
+        self.n = int(1.0 / h)
+        self.N = (self.n + 1) ** 2
+        self.r = self.mu * self.k / (self.h**2)
+        self.x = self.y = np.arange(self.n + 1) * self.h
+        self.X, self.Y = np.meshgrid(self.x, self.y)
+        self.Xf, self.Yf = np.meshgrid(self.x, self.y)
+        self.L = self.laplacian(self.n)
+        
     def plot_solution(self, t_idx=0, U_snapshots=None, t=None):
         if U_snapshots is None:
             U_snap = self.U
@@ -150,7 +162,6 @@ class Heat:
             return current_surf
 
         def update(frame):
-            # Remove current surface
             for s in current_surf:
                 s.remove()
             current_surf.clear()
@@ -159,10 +170,7 @@ class Heat:
             U_shaped = U_snapshots[frame].reshape((self.n + 1, self.n + 1))
             new_surf = ax.plot_surface(X, Y, U_shaped, cmap="viridis", edgecolor="none")
             current_surf.append(new_surf)
-
-            # Update title
             title.set_text(f"t = {t[frame]:.4f}")
-
             return current_surf
 
         anim = FuncAnimation(
@@ -178,7 +186,7 @@ class Heat:
         return fig, anim
 
 
-def g0(x, y, t):
+def g0(x, y, t): 
     return np.sin(np.pi * x) * np.sin(np.pi * y) * np.exp(-2 * np.pi**2 * t)
 
 def u0(x, y):
@@ -227,4 +235,122 @@ def heat_error_analysis_1(Heat, g0, u0):
         
     plt.tight_layout()
     plt.show()
+    
+    
+
+
+def u_exact(x, y, t, mu=1.0, a=0.0):
+    return np.sin(np.pi * x) * np.sin(np.pi * y) * np.exp(-(2 * np.pi**2 * mu - a) * t)
+
+
+def g_exact(x, y, t, mu=1.0, a=0.0):
+    return u_exact(x, y, t, mu, a)
+
+
+def u0_exact(x, y, mu=1.0, a=0.0):
+    return u_exact(x, y, 0, mu, a)
+
+
+def compute_errors(n_values, T=1.0, mu=1.0, a=0.0):
+    """
+    Compute L2 and L-infinity errors for various grid resolutions.
+    """
+    errors_L2 = np.zeros(len(n_values))
+    errors_Linf = np.zeros(len(n_values))
+    times = np.zeros(len(n_values))
+    
+    for i, n in enumerate(n_values):
+        start_time = time.time()
+    
+        heat = Heat(mu=mu, a=a, g=g_exact, n=n)
+        heat.set_IC(lambda x, y: u_exact(x, y, 0, mu, a))
+        
+        # Run simulation
+        U_snapshots, t = heat.simulate(tf=T, snapshot_stride=1)
+        times[i] = time.time() - start_time
+        
+        # Compute exact solution at final time
+        X, Y = heat.get_grid()
+        U_exact = u_exact(X, Y, T, mu, a).flatten()
+        
+        # Compute errors
+        error = U_snapshots[-1] - U_exact
+        errors_L2[i] = np.sqrt(np.mean(error**2))
+        errors_Linf[i] = np.max(np.abs(error))
+        
+        print(f"n={n}, h={1.0/n:.6f}, L2 Error={errors_L2[i]:.6e}, Linf Error={errors_Linf[i]:.6e}")
+    
+    return errors_L2, errors_Linf, times
+
+fig, (ax_k, ax_h) = plt.subplots(1, 2, figsize=(12, 6), dpi=150)
+
+n = 50
+h = 1.0/n
+mu = 1.0
+a = 1.0 
+T = 1.0
+
+k_values = np.logspace(-3, 2, 30)
+E_k = []
+for k in k_values:
+    heat = Heat(mu=1.0, a=1.0, n=50, g=g0)
+    heat.set_IC(u0)
+    heat.set_k(k)
+    h = heat.get_h()
+    
+    stride = max(1, int(T/(100*k))) 
+    U_snapshots, t = heat.simulate(tf=T, snapshot_stride=stride)
+    
+    X, Y = heat.get_grid()
+    U_exact_k = u_exact(X, Y, T, mu, a).flatten()
+    E_k.append(np.max(np.abs(U_snapshots[-1] - U_exact_k)))
+    print(f"k={k:.4e}, max error={E_k[-1]:.4e}")
+    
+
+ax_k.loglog(k_values, np.array(E_k), 'bo-', label='$\\mathcal{O}(k^p)$', linewidth=1.5)
+
+ax_k.loglog(k_values, k_values, 'k--', label=r'$\mathcal{O}(k)$', alpha=0.5)
+ax_k.loglog(k_values, k_values**2, 'k:', label=r'$\mathcal{O}(k^2)$')
+ax_k.loglog(k_values, k_values**3, 'k-.', label=r'$\mathcal{O}(k^3)$', alpha=0.5)
+
+ax_k.set_xlabel('Time Step $(k)$', fontsize=14)
+ax_k.set_ylabel('Error', fontsize=14)
+ax_k.set_title(f'Error vs Time Step', fontsize=20)
+ax_k.legend(fontsize=12)
+ax_k.grid(True)
+
+
+# =========== H-convergence ===========
+n_values = np.logspace(1, 2.5, 30, dtype=int)
+h_values = 1.0/n_values
+E_h = []
+
+for n in n_values:
+    k = 1.0/n
+    heat = Heat(mu=1.0, a=1.0, n=n, g=g0)
+    heat.set_IC(u0)
+    
+    stride = max(1, int(T/(100*k)))
+    U_snapshots, t = heat.simulate(tf=T, snapshot_stride=stride)
+    
+    X, Y = heat.get_grid()
+    U_exact = u_exact(X, Y, T, mu, a).flatten()
+    E_h.append(np.max(np.abs(U_snapshots[-1] - U_exact)))
+    print(f"n={n}, h={1.0/n:.4e}, k={k:.4e}, max error={E_h[-1]:.4e}")
+
+E_h = np.array(E_h)
+
+ax_h.loglog(h_values, E_h, 'ro-', label='$\\mathcal{O}(h^p)$', linewidth=1.5)
+ax_h.loglog(h_values, h_values, 'k--', label=r'$\mathcal{O}(h)$', alpha=0.5)
+ax_h.loglog(h_values, h_values**2, 'k:', label=r'$\mathcal{O}(h^2)$')
+
+ax_h.set_xlabel('Step Size $(h)$', fontsize=14)
+ax_h.set_ylabel('Error', fontsize=14)
+ax_h.set_title('Error vs Grid Size', fontsize=20)
+ax_h.legend(fontsize=10)
+ax_h.grid(True)
+
+plt.tight_layout()
+plt.savefig('heat_convergence.png', dpi=300)
+plt.show()
 
