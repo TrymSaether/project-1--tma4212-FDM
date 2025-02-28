@@ -60,15 +60,15 @@ class SIRSimulation:
         return kron(I, L) + kron(L, I)
 
     def beta_function(self, t):
-        dist_to_center = (self.X - self.L / 2)**2 + (self.Y - self.L / 2)**2
-        spatial_factor = 1 + np.exp(-50 * dist_to_center)  # Higher in center
-
         if 2 <= t <= 2+np.pi:
-            time_factor = 1 + 0.5 * np.sin(t-2)  # Fluctuates with time
+            time_factor = 1 + 0.1 * np.sin(t-2)  # Fluctuates with time
         else:
             return self.beta
+        
+        dist_to_center = (self.X - self.L / 2)**2 + (self.Y - self.L / 2)**2
+        spatial_factor = 1 + 0.5 * np.exp(-100 * dist_to_center)  # Higher in center
 
-        return (self.beta * spatial_factor * time_factor).ravel() #* moving_hotspot
+        return (self.beta * spatial_factor * time_factor).ravel()
 
 
     def step(self, t):
@@ -100,22 +100,31 @@ class SIRSimulation:
     def animate(self):
         fig = plt.figure(figsize=(8, 6))
         ax = fig.add_subplot(111, projection='3d')
-
+        surf = [None]
+        
         def update(frame):
+            t = frame * self.dt * 50  # Compute current time
+            if t >= 10:  # Stop condition
+                anim.event_source.stop()
+                return
+            
             for _ in range(50): 
-                self.step(frame * self.dt * 50)
-            ax.clear()
-            ax.plot_surface(self.X, self.Y, self.I.reshape(self.M, self.M), cmap='hot', edgecolor='none')
+                self.step(t)  # Stops updating once t > 10
+            
+            if surf[0] is not None:
+                surf[0].remove()
+            
+            surf[0] = ax.plot_surface(self.X, self.Y, self.I.reshape(self.M, self.M), cmap='hot', edgecolor='none')
             ax.set_zlim(0, 1)
-            ax.set_title(f'Infected Population at t={frame*self.dt*50:.2f}')
+            ax.set_title(f'Infected Population at t={t:.2f}')
             ax.set_xlabel('x')
             ax.set_ylabel('y')
             ax.set_zlabel('Infected Fraction')
-
-        anim = FuncAnimation(fig, update, frames=self.Nt//50, interval=10) 
+        
+        anim = FuncAnimation(fig, update, frames=int(min(self.Nt//50, 10 / (self.dt * 50))), interval=10) 
         plt.show()
 
 
-sim = SIRSimulation(dynamic_beta=True)
+sim = SIRSimulation(n=1, dynamic_beta=True)
 sim.show_initial()
 sim.animate()
