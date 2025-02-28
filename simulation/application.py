@@ -212,7 +212,3 @@ def update(frame):
 anim = FuncAnimation(
     fig, update, frames=len(I), init_func=init, blit=False, interval=1, repeat=True
 )
-plt.show()
-
-
-# anim.save("3D_infected_animation.mp4", fps=30, extra_args=["-vcodec", "libx264"])
