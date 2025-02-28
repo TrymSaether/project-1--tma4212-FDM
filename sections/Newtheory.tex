@@ -271,28 +271,16 @@ this is true.
 Hence the proposed two-stage method inherits the main advantages of Crank--Nicolson (robust stability, second-order behavior) while treating the reaction term explicitly.
 
 \subsection{Numerical Verification}
+We verify the theoretical results by simulating the reaction-diffusion equation with a linear reaction term.
+Here the reaction term is given by \(f(u) = au\) with \(a = 1\), and the diffusion coefficient is set to \(\mu = 1\).
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.8\textwidth]{figures/parameter_effects.png}
-  \label{fig:parameter_effects}
-\end{figure}
-
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.8\textwidth]{figures/convergence_analysis_2d.png}
+  \includegraphics[width=0.5\textwidth]{figures/convergence_analysis_2d.png}
+  \caption{Convergence analysis of the modified Crank--Nicolson scheme for the reaction-diffusion equation with a linear reaction term.}
   \label{fig:convergence_analysis_2d}
 \end{figure}
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.8\textwidth]{figures/convergence_analysis.png}
-  \label{fig:convergence_analysis_1d}
-\end{figure}
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.8\textwidth]{figures/stability_error_vs_cfl.png}
-  \label{fig:stability_error_vs_cfl}
-\end{figure}
+The figure shows the convergence of the numerical solution to the exact solution as the grid is refined. The error decreases quadratically with respect to both \(h\) and \(k\), confirming the second-order accuracy of the scheme.
+
 
