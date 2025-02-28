@@ -1,1 +1,24 @@
 \section{Discussion}
+
+\subsection{Theory versus Numerical Results}
+In principle, the linear stability analysis applies most directly if \(f(u)\) is linear. Our tests used a strongly 
+nonlinear infection term \(\beta\,S\,I\), so the unconditional stability partially hinges on the moderate size of 
+\(\beta\) and small time steps in practice. The local truncation argument still informs us that spatial errors 
+scale like \(h^2\) and temporal errors like \(k^2\). Numerically, we see outcomes 
+consistent with that prediction, but if one pushed the ratio \(k/h^2\) too high or introduced extremely large 
+\(\beta\), the scheme could exhibit instability or large phase errors. Thus, while the theoretical 
+\(\mathcal{O}(h^2)\) accuracy remains a useful guideline, the real PDE problem is more delicate than a purely 
+linear analysis suggests.
+
+\subsection{Limitations of Numerical Scheme}
+Although our numerical scheme is supported by a consistency and stability analysis for linearized 
+problems, it faces some caveats. First, the reaction-diffusion equation with a fully nonlinear 
+reaction \(f(u)\) may require additional care, especially if the reaction term grows quickly or exhibits stiff 
+behavior. In that case, even though the scheme remains conditionally consistent, larger time steps may trigger 
+inaccuracies in the reaction component.
+
+\subsection{Limitations of SIR Model}
+On the modeling side, our SIR setup simplifies many real-world complexities. The population is mostly uniformly 
+distributed except for the small adjustments in \(\beta(x,y,t)\), travel into/out of the region is ignored, 
+and we do not address other realistic processes. While these simplifications permit tractable PDE computations, 
+it means our conclusions about how infection waves propagate may not translate directly to real world situations
