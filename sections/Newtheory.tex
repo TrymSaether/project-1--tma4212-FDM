@@ -256,72 +256,31 @@ this is true.
 \end{proof}
 
 
-\paragraph{Matrix Formulation for the Linearized Problem.}
-Take \(f(u) = a\,u\). Then the predictor step in vector form reads
-\[
-  \bigl(I - \tfrac{r}{2}A\bigr)\,U^\star
-  \;=\;
-  \bigl(I + \tfrac{r}{2}A \;+\; k\,a\,I \bigr)\,U^n,
-  \quad\text{where }A = \delta_x^2.
-\]
-The corrector step becomes
-\[
-  U^{n+1}
-  \;=\;
-  U^\star \;+\;\tfrac{k\,a}{2}\,\bigl(U^\star - U^n\bigr).
-\]
-Combining them yields a single ``amplification matrix'' \(C\) from \(U^n\) to \(U^{n+1}\).
-One can show that the eigenvalues of \(C\) stay within \(\lvert\xi\rvert \le 1 + \mathcal{O}(k)\),
-for any \(r = \mu\,k/h^2\). Thus, no upper bound on \(k\) of the form \(k\le \mathrm{const}\times h^p\)
-is needed to maintain stability. This property is often referred to as being
-\emph{unconditionally stable} for the linear PDE.
+\subsubsection{Global Error and Convergence}
 
-\paragraph{Von Neumann Argument (Periodic BC).}
-If we impose periodic boundary conditions, standard Fourier analysis leads to an
-amplification factor
-\[
-  \zeta(\beta) \;=\;
-  \Bigl(1 + \tfrac{k\,a}{2}\Bigr)\,\alpha(\beta) 
-  \;-\;
-  \tfrac{k\,a}{2},
-\]
-where \(\alpha(\beta)\) depends on \(r\,(\cos\beta h - 1)\). One finds
-\(\bigl|\zeta(\beta)\bigr| \le 1 + C\,k\) for all modes \(\beta\). Hence the scheme remains
-stable for any \(r\ge0\).
-
-\medskip
-\noindent
-\textbf{Conclusion (Stability).} When linearized about \(f(u)=a\,u\), the two-stage
-Crank–Nicolson scheme is \emph{unconditionally stable}, with no requirement
-\(k\lesssim h^p\). This extends to standard boundary conditions (Dirichlet, Neumann, or
-Robin) via a matrix argument.
-
-\subsection{Global Error and Convergence}
-
-By the Lax–Richtmyer equivalence theorem for linear PDEs, \emph{consistency} plus
-\emph{stability} implies \emph{convergence}. Thus the global error satisfies
-\[
-  \max_{m,n}\,\bigl|\,u(x_m,t_n) - U_m^n\bigr|
-  \;\le\;
-  C\,\bigl(k^2 + h^2\bigr),
-\]
-provided \(k \propto h^2\). In practical simulations of parabolic equations, one usually
-chooses \(k \approx \alpha \,h^2\) anyway, so the time and space discretization errors
-are balanced at \(\mathcal{O}(h^2)\).
-
-\medskip
-\noindent
-\textbf{Summary of Theoretical Properties:}
-\begin{itemize}
-    \item \textbf{Method Formulation:} The scheme uses a half-implicit, half-explicit approach
-          for the diffusion, combined with a midpoint-based reaction update.
-    \item \textbf{Consistency:} The local truncation error is \(\mathcal{O}(k^3 + k\,h^2)\),
-          implying second-order accuracy when \(k \sim h^2\).
-    \item \textbf{Unconditional Stability:} No CFL-type restriction is needed; stability
-          holds for all \(k\).
-    \item \textbf{Global Error:} Convergence of \(\mathcal{O}(h^2 + k^2)\) if one balances
-          \(k \approx \alpha\,h^2\).
-\end{itemize}
+\begin{theorem}{Lax Equivalence and Convergence of Crank--Nicolson}{cn_convergence}
+  Since the modified Crank--Nicolson scheme is both consistent and stable, by the Lax Equivalence Theorem 
+  (Theorem~\ref{thm:lax}), it is convergent. Under the parabolic scaling $k \sim h^2$, the scheme achieves 
+  second-order convergence. Thus the global error satisfies:
+  \[
+    \|e_m^n\| = \mathcal{O}\!\left(h^2 + k^2\right)
+  \]
+  
+\end{theorem}
 
 Hence the proposed two-stage method inherits the main advantages of Crank–Nicolson
 (robust stability, second-order behavior) while treating the reaction term explicitly.
+
+
+\subsection{Numerical Verification}
+
+DETTE ER SKAL IKKE VÆRE MED I FERDIG RAPPORT
+\begin{remark}{Practical Implications}{practical_implications}
+    The unconditional stability of Crank--Nicolson allows for flexible choice of step sizes without stability 
+    concerns. However, accuracy considerations typically suggest using the parabolic scaling $k \sim h^2$ to 
+    balance spatial and temporal errors.
+  
+    Despite being implicit (requiring the solution of a linear system at each step), Crank--Nicolson's superior 
+    stability and accuracy properties often justify the additional computational cost compared to explicit 
+    methods like FTCS.
+  \end{remark}
