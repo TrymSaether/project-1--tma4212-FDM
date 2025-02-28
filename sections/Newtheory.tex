@@ -273,16 +273,18 @@ Hence the proposed two-stage method inherits the main advantages of Crank--Nicol
 \subsection{Numerical Verification}
 We verify the theoretical results by performing a convergence analysis of the modified Crank--Nicolson scheme for the reaction-diffusion equation with a linear reaction term. The numerical solution is compared to the exact solution, and the error is computed for different grid sizes. The results are shown in Figure~\ref{fig:convergence_analysis_2d}.
 The parameters are set to \(\mu = 1\), \(L = 1\), \(a = 1\), and the initial condition is given by \(u(x,0) = \sin(\pi x)\).
-
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth]{figures/convergence_analysis_2d.png}
   \caption{Convergence analysis of the modified Crank--Nicolson scheme for the reaction-diffusion equation with a linear reaction term.}
   \label{fig:convergence_analysis_2d}
 \end{figure}
+The figure shows the convergence of the numerical solution to the exact solution as the grid is refined.
+The error decreases quadratically with respect to both \(h\) and \(k\), confirming the second-order accuracy of the scheme.
+We can also confirm that choosing a parabolic scaling \(k \propto h^2\) yields a better second-order convergence.
 
-The figure shows the convergence of the numerical solution to the exact solution as the grid is refined. The error decreases quadratically with respect to both \(h\) and \(k\), confirming the second-order accuracy of the scheme.
 
-We can also confirm that choosing a parabolic scaling \(k \propto h^2\) yields second-order convergence.
+
+
 
 
