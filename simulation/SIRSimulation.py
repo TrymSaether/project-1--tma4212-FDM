@@ -125,6 +125,6 @@ class SIRSimulation:
         plt.show()
 
 
-sim = SIRSimulation(n=1, dynamic_beta=True)
+sim = SIRSimulation(n=0, dynamic_beta=True)
 sim.show_initial()
 sim.animate()
