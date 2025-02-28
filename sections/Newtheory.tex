@@ -1,7 +1,5 @@
-\section{Theory}
-
+\section{Theory: Reaction--Diffusion Equation and Finite Difference Method's}
 \subsection{Overview of the Numerical Method}
-
 We consider the reaction-diffusion equation
 \[
   u_t \;=\; \mu\,u_{xx} \;+\; f(u),
@@ -15,19 +13,17 @@ parameter
 \[
   r \;=\; \frac{\mu\,k}{h^2}.
 \]
-The scheme combines a Crank–Nicolson-like step for the diffusion term with an explicit
-component for the reaction. it approximates the spatial derivative at the midpoint between time steps.
-It is unconditionally stable and second-order accurate in time and space. Concretely, each time-step consists of:
+The scheme combines a Crank--Nicolson-like step for the diffusion term with an explicit
+component for the reaction. It approximates the spatial derivative at the midpoint between time steps.
+It is unconditionally stable and second--order accurate in time and space. Concretely, each time--step consists of:
 
 \begin{enumerate}
-  \item \emph{Predictor}: approximate the diffusion term in a semi-implicit manner and
+  \item \emph{Predictor}: approximate the diffusion term in a semi--implicit manner and
         add an explicit reaction increment:
-        \[
-          U_m^\star
-          \;=\; U_m^n
-          \;+\; \frac{r}{2}\bigl(\delta_x^2 U_m^\star + \delta_x^2 U_m^n\bigr)
-          \;+\; k\,f\bigl(U_m^n\bigr), \quad \text{where} \quad \delta_x^2 U_m^n = U_{m+1}^n - 2\,U_m^n + U_{m-1}^n.
-        \]
+        \begin{align*}
+          U_m^\star        & = U_m^n + \frac{r}{2}\bigl(\delta_x^2 U_m^\star + \delta_x^2 U_m^n\bigr) + k\,f\bigl(U_m^n\bigr) \\
+          \delta_x^2 U_m^n & = U_{m+1}^n - 2\,U_m^n + U_{m-1}^n \tag{Central Difference Method} \label{eq:cdm}
+        \end{align*}
   \item \emph{Corrector}: apply a midpoint update for the reaction:
         \[
           U_m^{n+1}
@@ -35,9 +31,8 @@ It is unconditionally stable and second-order accurate in time and space. Concre
           \;+\; \tfrac{k}{2}\,\Bigl(f\bigl(U_m^\star\bigr) - f\bigl(U_m^n\bigr)\Bigr).
         \]
 \end{enumerate}
-Visually the scheme can be illustrated with a stencil as shown below. Clearly showing the discretization of
-the domain and how this is used to calculate the next value in time with the diffusion term calculated
-semi-implicitly and the reaction term explicity.
+Visually the scheme can be illustrated with a stencil as shown below.
+Clearly showing the discretization of the domain and how this is used to calculate the next value in time with the diffusion term calculated semi--implicitly and the reaction term explicity.
 
 \begin{tikzpicture}[scale=0.8]
   % Define colors
@@ -98,30 +93,31 @@ semi-implicitly and the reaction term explicity.
   \draw[red, thick] (0,0) -- (6,0);
   \draw[red, thick] (0,6) -- (6,6);
 
-  % boundary labels MÅ FIKSES!
-
   % Crank-Nicolson scheme visualization
   \node[below right, align=left, font=\small, fill=gray!10, rounded corners, inner sep=5pt]
   at (6.5,6.5) {
-  \textbf{Crank-Nicolson:}\\
+  \textbf{Crank--Nicolson:}\\
   Step 1 \textcolor{predictorcolor}{(Predictor)}: $U_m^* = U_m^n + \frac{r}{2}(\delta_x^2 U_m^* + \delta_x^2 U_m^n) + k f(U_m^n)$ \hspace{5pt} \\
   Step 2 \textcolor{correctorcolor}{(Corrector)}: $U_m^{n+1} = U_m^* + \frac{k}{2}(f(U_m^*) - f(U_m^n))$
   };
 \end{tikzpicture}
+
 For the boundary conditions, either Dirichlet, Neumann, or Robin, one sets or solves for the boundary
 values \(U_0^n\), \(U_{M+1}^n\) at each step as usual.
+
 \subsection{Error Analysis}
-To analyze the correctness of the scheme it is critical to determine both the consistency and stability of the
-scheme. This is because a numerical method converges, as in, produces the true PDE solution as the grid is refined,
-if and only if it is both consistent and stable. Consistency ensures the scheme’s discrete equations capture
-the differential equation correctly. Stability ensures errors do not grow uncontrollably. Without both, one cannot
-guarantee convergence.
+To analyze the correctness of the scheme it is neccessary to determine both the consistency and stability of the scheme.
+This is because a numerical method converges if, and only if, it is both consistent and stable.
+
+
 \subsubsection{Consistency}
-To determine the consistency of the modified Crank-Nicolson scheme for the PDE with the linear reaction term
-$f(u) = au$, we analyze the local truncation error (LTE) by substituting the exact solution into our
-numerical scheme.
-\begin{theorem}{Local truncation error for the modified Crank-Nicolson}{lte_cn}
-  For the PDE $u_t = \mu u_{xx} + au$ with constant $a$, the modified Crank-Nicolson scheme with steps $h$ (space)
+Consistency ensures that as the discrete step sizes approach zero, the numerical scheme's approximation converges to the original differential equation.
+In other words, consistency guarantees that we are actually solving the intended continuous problem rather than some other unrelated equation.
+To determine the consistency of the modified Crank--Nicolson scheme for the PDE with the linear reaction term $f(u) = au$,
+we analyze the local truncation error (LTE) by substituting the exact solution into our numerical scheme.
+
+\begin{theorem}{Local truncation error for the modified Crank--Nicolson}{lte_cn}
+  For the PDE $u_t = \mu u_{xx} + au$ with constant $a$, the modified Crank--Nicolson scheme with steps $h$ (space)
   and $k$ (time) has local truncation error
   \[
     \|\tau_m^n\| = \mathcal{O}\!\left(k +\tfrac{h^4}{k}\right)
@@ -136,17 +132,17 @@ numerical scheme.
 
 \begin{proof}[Proof of Theorem~\ref{thm:lte_cn}]
   We analyze the truncation error by examining how the exact solution satisfies the numerical scheme.
-
-  First, consider the central difference approximations for the second derivatives:
+  \medskip
+  First, consider \eqref{eq:cdm} for the second spatial derivative:
   \begin{align*}
     \delta_x^2 u_m^n     & = h^2u_{xx}(x_m,t_n) + \mathcal{O}(h^4)       \\
     \delta_x^2 u_m^\star & = h^2u_{xx}(x_m,t_n) + \mathcal{O}(h^4 + k^4)
   \end{align*}
 
   \textit{Step 1 (Predictor):} Substituting the exact solution into the first stage:
-  \begin{equation}
-    u_m^\star = u_m^n + \frac{r}{2}\left(\delta_x^2 u_m^\star + \delta_x^2 u_m^n\right) + kau_m^n = u_m^n + \frac{\mu k}{2}u_{xx}(x_m,t_n) + kau_m^n + \mathcal{O}(h^4 + k^4)
-  \end{equation}
+  \begin{align*}
+    u_m^\star & = u_m^n + \frac{r}{2}\left(\delta_x^2 u_m^\star + \delta_x^2 u_m^n\right) + kau_m^n = u_m^n + \frac{\mu k}{2}u_{xx}(x_m,t_n) + kau_m^n + \mathcal{O}(h^4 + k^4)
+  \end{align*}
   \textit{Step 2 (Corrector):} For the second stage:
   \begin{align*}
     u_m^{n+1} & = u_m^\star + \frac{k}{2}(au_m^\star - au_m^n)
@@ -170,11 +166,11 @@ numerical scheme.
   Under the parabolic scaling $k \sim h^2$, we have $\frac{h^4}{k} \sim h^2$, yielding second-order accuracy:
   \begin{align*}
     \|\tau_m^{n+1}\| = \mathcal{O}(h^2 + k^2)
-  \end{align*}
+  \end{align*}\qed
 \end{proof}
-Hence, as stated in the theorem, if we choose \(k\) and \(h\) so that \(k \propto \mathrm{const}\times h^2\),
-the method achieves second-order accuracy in both time and space.
+
 \subsubsection{Stability Analysis}
+Stability ensures errors do not grow uncontrollably. Without both, one cannot guarantee convergence.
 We investigate whether the scheme can tolerate large time steps without amplification of numerical errors, thus
 satisfing the conditions for stability.
 For linear problems
@@ -203,7 +199,7 @@ this is true.
   \end{align*}
 
   Substituting the Fourier modes $U_m^n = \xi^n e^{i\beta mh}$ and $U_m^\star = \xi^n \xi^\star e^{i\beta mh}$
-  
+
   \begin{align*}
     \xi^\star & = \frac{1 - r\sin^2(\beta h/2) + ka}{1 + 2r\sin^2(\beta h/2)}, \quad \text{where}\quad s = \sin^2(\beta h/2)
   \end{align*}
@@ -230,7 +226,7 @@ this is true.
   \begin{align*}
     |\xi(0)| & \leq 1 + |a|k(1 + |a|k/2)
   \end{align*}
-  Therefore, $|\xi| \leq 1 + Ck$ with $C = |a|(1 + |a|k/2) \approx |a|$ for small $k$, confirming the scheme is unconditionally stable.
+  Therefore, $|\xi| \leq 1 + Ck$ with $C = |a|(1 + |a|k/2) \approx |a|$ for small $k$, confirming the scheme is unconditionally stable. \qed
 \end{proof}
 \clearpage
 \subsubsection{Global Error and Convergence}
@@ -241,22 +237,20 @@ this is true.
     \|e_m^n\| = \mathcal{O}\!\left(h^2 + k^2\right)
   \]
 \end{theorem}
-Hence the proposed two-stage method inherits the main advantages of Crank--Nicolson (robust stability, second-order behavior) while treating the reaction term explicitly.
+
+\begin{remark}{}{}
+  The proof follows directly from the Lax Equivalence Theorem, which states that for linear problems, if a numerical scheme is consistent and stable, it converges to the exact solution.
+\end{remark}
+
 \subsection{Numerical Verification}
 We verify the theoretical results by performing a convergence analysis of the modified Crank--Nicolson scheme for the reaction-diffusion equation with a linear reaction term. The numerical solution is compared to the exact solution, and the error is computed for different grid sizes. The results are shown in Figure~\ref{fig:convergence_analysis_2d}.
 The parameters are set to \(\mu = 1\), \(L = 1\), \(a = 1\), and the initial condition is given by \(u(x,0) = \sin(\pi x)\).
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.8\textwidth]{figures/convergence_analysis_2d.png}
-  \caption{Convergence analysis of the modified Crank--Nicolson scheme for the reaction-diffusion equation with a linear reaction term.}
+  \includegraphics[width=1.0\textwidth]{figures/convergence_analysis_2d.png}
+  \caption{Convergence analysis of the modified Crank--Nicolson scheme for the reaction--diffusion equation with a linear reaction term.}
   \label{fig:convergence_analysis_2d}
 \end{figure}
 The figure shows the convergence of the numerical solution to the exact solution as the grid is refined.
 The error decreases quadratically with respect to both \(h\) and \(k\), confirming the second-order accuracy of the scheme.
 We can also confirm that choosing a parabolic scaling \(k \propto h^2\) yields a better second-order convergence.
-
-
-
-
-
-

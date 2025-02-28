@@ -1,14 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from scipy.sparse import diags, coo_matrix, eye, kron
-
-
-
-# Define a custom colormap for infection and susceptible
-colors = ["#00FF00", "#FF0000"]  # Green for susceptible, red for infected
-sir_cm = plt.cm.colors.ListedColormap(colors)
-
+from scipy.sparse import diags, eye, kron
 
 class SIR:
     def __init__(self, beta, gamma, muS, muI, n):
@@ -219,68 +212,78 @@ anim = FuncAnimation(
 fig = plt.figure(figsize=(16, 10))
 
 # Select specific time points to show the progression
-time_indices = [int(len(t)/10), int(len(t)/5), int(len(t)*2/5), int(len(t)*3/5), int(len(t)*4/5), -1]
+time_indices = [
+    int(len(t) / 10),
+    int(len(t) / 5),
+    int(len(t) * 2 / 5),
+    int(len(t) * 3 / 5),
+    int(len(t) * 4 / 5),
+    -1,
+]
 time_points = [t[i] for i in time_indices]
 
 for i, idx in enumerate(time_indices):
     # Plot for Susceptible (S)
-    ax1 = fig.add_subplot(2, 3, i+1, projection='3d')
-    
+    ax1 = fig.add_subplot(2, 3, i + 1, projection="3d")
+
     # Get the 2D representation of susceptible data
-    S_2d = S[idx].reshape((N+1, N+1))
-    
+    S_2d = S[idx].reshape((N + 1, N + 1))
+
     # Plot S with viridis colormap
     surf_s = ax1.plot_surface(
-        X, Y, S_2d, 
-        cmap='viridis',
-        edgecolor='none',
-        alpha=1,
-        antialiased=True
+        X, Y, S_2d, cmap="viridis", edgecolor="none", alpha=1, antialiased=True
     )
-    
+
     # Set plot properties
     ax1.set_title(f"t = {t[idx]:.2f}", fontsize=12)
     ax1.set_xlabel("x", fontsize=10)
     ax1.set_ylabel("y", fontsize=10)
     ax1.set_zlabel("S %", fontsize=10)
     ax1.set_zlim(0, 1.0)
-    
+
     # Add annotation with susceptible statistics
     s_percent = S[idx].sum() / len(S[idx]) * 100
-    ax1.text2D(0.05, 0.95, f"Susceptible: {s_percent:.2f}%", 
-               transform=ax1.transAxes, fontsize=10,
-               bbox=dict(facecolor='white', alpha=1))
+    ax1.text2D(
+        0.05,
+        0.95,
+        f"Susceptible: {s_percent:.2f}%",
+        transform=ax1.transAxes,
+        fontsize=10,
+        bbox=dict(facecolor="white", alpha=1),
+    )
 
 # Create a separate figure for Infected plots
 fig2 = plt.figure(figsize=(16, 10))
 
 for i, idx in enumerate(time_indices):
     # Plot for Infected (I)
-    ax2 = fig2.add_subplot(2, 3, i+1, projection='3d')
-    
+    ax2 = fig2.add_subplot(2, 3, i + 1, projection="3d")
+
     # Get the 2D representation of infection data
-    I_2d = I[idx].reshape((N+1, N+1))
-    
+    I_2d = I[idx].reshape((N + 1, N + 1))
+
     # Plot I with plasma colormap
     surf_i = ax2.plot_surface(
-        X, Y, I_2d, 
-        cmap='plasma',
-        edgecolor='none',
-        antialiased=True
+        X, Y, I_2d, cmap="plasma", edgecolor="none", antialiased=True
     )
-    
+
     # Set plot properties
     ax2.set_title(f"t = {t[idx]:.2f}", fontsize=12)
     ax2.set_xlabel("x", fontsize=10)
     ax2.set_ylabel("y", fontsize=10)
     ax2.set_zlabel("I %", fontsize=10)
     ax2.set_zlim(0, 1.0)
-    
+
     # Add annotation with infection statistics
     i_percent = I[idx].sum() / len(I[idx]) * 100
-    ax2.text2D(0.05, 0.95, f"Infected: {i_percent:.2f}%", 
-               transform=ax2.transAxes, fontsize=10,
-               bbox=dict(facecolor='white'))
+    ax2.text2D(
+        0.05,
+        0.95,
+        f"Infected: {i_percent:.2f}%",
+        transform=ax2.transAxes,
+        fontsize=10,
+        bbox=dict(facecolor="white"),
+    )
 
 # Add titles and adjust layout
 fig.suptitle("Progression of Susceptible Population Over Time", fontsize=16)

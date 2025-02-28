@@ -1,7 +1,7 @@
 \section{Application: Spatial-Temporal SIR Model}
 
-We study the spatial-temporal spread of a disease by extending the classic SIR model to two spatial dimensions. 
-This results in a reaction-diffusion system for \((S,I)\) on a square domain \(\Omega = [0,L]\times [0,L]\). As
+We study the spatial--temporal spread of a disease by extending the classic SIR model to two spatial dimensions. 
+This results in a reaction--diffusion system for \((S,I)\) on a square domain \(\Omega = [0,L]\times [0,L]\). As
 discussed in the theory section this is a good candidate for the modified Crank--Nicolson scheme.
 
 \subsection{Model Formulation and Modifications}
@@ -47,13 +47,7 @@ larger mesh would capture finer diffusion details but slow the simulation signif
 We approximate \(\Delta u\approx \partial_x^2u+\partial_y^2u\) by standard central differences. In one dimension 
 (size \(M\)), the matrix for second differences is tridiagonal:
 \[
-  L_{\text{1D}} \;=\; \frac{1}{h^2}\,\begin{bmatrix}
-    -2 & 1 &         &   &     \\
-     1 & -2 & 1      &   &     \\
-       & 1  & \ddots & \ddots &\\
-       &    & \ddots & -2 & 1   \\
-       &    &        & 1 & -2
-  \end{bmatrix}.
+  L_{\text{1D}} = \operatorname{tridiag}{\{1,-2,1\}} \in \R^{M\times M}
 \]
 To handle a 2D Laplacian, we form \(L_{\text{2D}} = \text{kron}(I,L_{\text{1D}}) + \text{kron}(L_{\text{1D}},I)\), 
 where \(\text{kron}\) is the Kronecker product and \(I\) is the \(M\times M\) identity. This yields an 
