@@ -490,6 +490,8 @@ To determine the consistency of the Crank-Nicolson scheme for the heat equation 
   \end{align*}
 \end{proof}
 
+
+
 \subsubsection{Stability (Von Neumann)}
 \begin{theorem}{von Neumann Stability for Crank--Nicolson}{von_neumann_cn}
   The Crank--Nicolson scheme for the heat equation with linear reaction term $f(u) = au$ is unconditionally stable for any choice of step sizes $h$ and $k$. The amplification factor $\xi$ satisfies:
@@ -546,11 +548,15 @@ To determine the consistency of the Crank-Nicolson scheme for the heat equation 
   Therefore, $|\xi| \leq 1 + Ck$ with $C = |a|(1 + |a|k/2) \approx |a|$ for small $k$, confirming the scheme is unconditionally stable.
 \end{proof}
 
+\paragraph{Unconditional Stability}
+The modified Crank--Nicolson scheme is unconditionally stable, meaning it remains stable for any choice of step sizes $h$ and $k$.
+This is a significant advantage over explicit methods like FTCS, which require careful selection of step sizes to maintain a stable solution.
+
 \subsubsection{Convergence}
 \begin{theorem}{Lax Equivalence and Convergence of Crank--Nicolson}{cn_convergence}
   Since the Crank--Nicolson scheme is both consistent and stable, by the Lax Equivalence Theorem (Theorem~\ref{thm:lax}), it is convergent. Under the parabolic scaling $k \sim h^2$, the scheme achieves second-order convergence:
   \[
-    \|e_m^n\| = \mathcal{O}\!\left(h^2 + k^2\right)
+    \|e_m^n\| = \mathcal{O}\left(h^2 + k^2\right)
   \]
 \end{theorem}
 
@@ -560,4 +566,28 @@ To determine the consistency of the Crank-Nicolson scheme for the heat equation 
   Despite being implicit (requiring the solution of a linear system at each step), Crank--Nicolson's superior stability and accuracy properties often justify the additional computational cost compared to explicit methods like FTCS.
 \end{remark}
 
-\subsection{Numerical Experiments}
+\paragraph{Global Error}
+
+\subsection{Numerical Verification of Theoretical Results}
+
+To validate our theoretical analysis, we conduct numerical experiments focusing on three key aspects:
+
+\paragraph{Convergence Rate Verification}
+We examine the empirical convergence rates by computing solutions with successively refined meshes. For a sequence of step sizes $h_i = h_0/2^i$, we compute the corresponding errors $e_i$ and estimate the convergence rate $p$ from:
+\[
+  p \approx \frac{\log(e_i/e_{i+1})}{\log(h_i/h_{i+1})}
+\]
+
+\paragraph{Error vs. Step Size}
+We plot the global error against both spatial and temporal step sizes, expecting to observe:
+\begin{itemize}
+  \item Second-order convergence under parabolic scaling ($k \sim h^2$)
+  \item Error behavior matching our theoretical prediction $\mathcal{O}(h^2 + k^2)$
+\end{itemize}
+
+\paragraph{Stability Analysis}
+We verify unconditional stability by testing various combinations of step sizes, including cases where the CFL number $\mu k/h^2$ is large, and monitor solution behavior for signs of instability.
+
+These numerical experiments serve to confirm our theoretical findings and demonstrate the practical reliability of the Crank-Nicolson scheme.
+
+

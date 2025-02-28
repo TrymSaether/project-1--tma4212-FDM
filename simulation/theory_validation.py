@@ -99,7 +99,7 @@ def demonstrate_stability():
     """
     Demonstrate the unconditional stability by using extremely large time steps.
     """
-    T = 1.0
+    T = 10
     mu = 1.0
     a = 1.0
     n = 50
@@ -187,7 +187,6 @@ def animate_solution():
     anim.save('solution_animation.mp4', fps=15, extra_args=['-vcodec', 'libx264'])
     return fig, anim
 
-
 def study_parameter_effects():
     """Study the effects of mu and a parameters on the solution"""
     n = 50
@@ -245,13 +244,12 @@ def error_vs_timestep():
     """
     Study how error varies with timestep size while keeping spatial resolution fixed
     """
-    n = 50 # Increased spatial resolution for better accuracy
+    n = 50 
     mu = 1.0
-    a = 1.0  # Using a=0 for simpler analysis
+    a = 1.0  
     T = 1.0
     
-    # More timestep values for smoother plots
-    k_values = np.logspace(-5, 0, 25)  # 20 points from 10^-4 to 10^0
+    k_values = np.logspace(-5, 0, 25)  
     errors = []
     
     for k in k_values:
