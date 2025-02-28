@@ -38,6 +38,7 @@ It is unconditionally stable and second-order accurate in time and space. Concre
 Visually the scheme can be illustrated with a stencil as shown below. Clearly showing the discretization of
 the domain and how this is used to calculate the next value in time with the diffusion term calculated
 semi-implicitly and the reaction term explicity.
+
 \begin{tikzpicture}[scale=0.8]
   % Define colors
   \colorlet{pointcolor}{black}
@@ -190,9 +191,10 @@ this is true.
 \end{theorem}
 
 \begin{proof}[Proof of Theorem~\ref{thm:von_neumann_cn}]
+
   We apply von Neumann stability analysis by studying how individual Fourier modes $U_m^n = \xi^n e^{i\beta mh}$
   evolve under our scheme, where $\beta$ is the wave number.
-
+  \medskip
   As previously statet the PDE with a linear reaction term $f(u) = au$, the two-stage modified Crank--Nicolson
   scheme is given by:
   \begin{align*}
@@ -230,10 +232,10 @@ this is true.
   \end{align*}
   Therefore, $|\xi| \leq 1 + Ck$ with $C = |a|(1 + |a|k/2) \approx |a|$ for small $k$, confirming the scheme is unconditionally stable.
 \end{proof}
+\clearpage
 \subsubsection{Global Error and Convergence}
 \begin{theorem}{Lax Equivalence and Convergence of Crank--Nicolson}{cn_convergence}
-  Since the modified Crank--Nicolson scheme is both consistent and stable, by the Lax Equivalence Theorem
-  (Theorem~\ref{thm:lax}), it is convergent. Under the parabolic scaling $k \sim h^2$, the scheme achieves
+  Since the modified Crank--Nicolson scheme is both consistent and stable, by the Lax Equivalence Theorem it is convergent. Under the parabolic scaling $k \sim h^2$, the scheme achieves
   second-order convergence. Thus the global error satisfies:
   \[
     \|e_m^n\| = \mathcal{O}\!\left(h^2 + k^2\right)
