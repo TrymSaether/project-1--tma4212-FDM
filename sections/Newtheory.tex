@@ -188,10 +188,73 @@ the method achieves second-order accuracy in both time and space.
 
 \subsubsection{Stability Analysis}
 
-We now investigate whether the scheme can tolerate large time steps without amplification
-of numerical errors. For linear problems
-\(\,u_t = \mu\,u_{xx} + a\,u,\) we can do a von~Neumann or matrix analysis to see whether
-any Courant-like restriction arises.
+We investigate whether the scheme can tolerate large time steps without amplification of numerical errors, thus
+satisfing the conditions for stability. 
+For linear problems
+\(\,u_t = \mu\,u_{xx} + a\,u,\) a von~Neumann analysis is done to see whether
+this is true.
+
+\begin{theorem}{von Neumann Stability for modified Crank--Nicolson}{von_neumann_cn}
+    The modified Crank--Nicolson scheme for the PDE with a linear reaction term $f(u) = au$ is unconditionally 
+    stable for any choice of step sizes $h$ and $k$, as the amplification factor $\xi$ satisfies:
+    \[
+      |\xi| \leq 1 + Ck
+    \]
+    for some constant $C$ independent of step sizes.
+  \end{theorem}
+  
+  \begin{proof}[Proof of Theorem~\ref{thm:von_neumann_cn}]
+    We apply von Neumann stability analysis by studying how individual Fourier modes $U_m^n = \xi^n e^{i\beta mh}$ 
+    evolve under our scheme, where $\beta$ is the wave number.
+  
+    As previously statet the PDE with a linear reaction term $f(u) = au$, the two-stage modified Crank--Nicolson 
+    scheme is given by:
+    \begin{align*}
+      U_m^\star & = U_m^n + \frac{r}{2}\left(U_{m+1}^\star - 2U_m^\star + U_{m-1}^\star + U_{m+1}^n - 2U_m^n + U_{m-1}^n\right) + kaU_m^n \\
+      U_m^{n+1} & = U_m^\star + \frac{ka}{2}(U_m^\star - U_m^n)
+    \end{align*}
+  
+    Substituting the Fourier mode $U_m^n = \xi^n e^{i\beta mh}$ and letting 
+    $U_m^\star = \xi^n \xi^\star e^{i\beta mh}$, we can use the identity 
+    $e^{i\beta (m+1)h} - 2e^{i\beta mh} + e^{i\beta (m-1)h} = -4\sin^2(\beta h/2)e^{i\beta mh}$ and derive:
+  
+    \begin{align*}
+      \xi^\star & = \frac{1 - r\sin^2(\beta h/2) + ka}{1 + 2r\sin^2(\beta h/2)}
+    \end{align*}
+  
+    For the second stage:
+    \begin{align*}
+      \xi^{n+1} & = \xi^n\left[\xi_\star\left(1 + \frac{ka}{2}\right) - \frac{ka}{2}\right]
+    \end{align*}
+  
+    Therefore, the amplification factor is:
+    \begin{align*}
+      \xi & = \frac{\left(1 - r\sin^2(\beta h/2) + ka\right)\left(1 + \frac{ka}{2}\right) - \frac{ka}{2}\left(1 + 2r\sin^2(\beta h/2)\right)}{1 + 2r\sin^2(\beta h/2)}
+    \end{align*}
+  
+    After algebraic simplification, and substituting $s = \sin^2(\beta h/2)$:
+    \begin{align*}
+      \xi & = \frac{1 - rs(1 + \tfrac{3}{2}ka) + ka + \tfrac{1}{2}k^2a^2}{1 + 2rs}
+    \end{align*}
+  
+    Then for $a \geq 0$ and any $r > 0$, both numerator and denominator are positive with $\xi(s) < 1$ for all 
+    $s \in [0,1]$.
+  
+    \medskip
+  
+    For $a < 0$, the worst case occurs at $s = 0$, giving:
+    \begin{align*}
+      \xi(0) & = 1 + ka + \frac{k^2a^2}{2} = 1 + ka\left(1 + \frac{ka}{2}\right)
+    \end{align*}
+  
+    For sufficiently small $k$:
+    \begin{align*}
+      |\xi(0)| & \leq 1 + |a|k(1 + |a|k/2)
+    \end{align*}
+  
+    Therefore, $|\xi| \leq 1 + Ck$ with $C = |a|(1 + |a|k/2) \approx |a|$ for small $k$, confirming the scheme is unconditionally stable.
+\end{proof}
+
 
 \paragraph{Matrix Formulation for the Linearized Problem.}
 Take \(f(u) = a\,u\). Then the predictor step in vector form reads
