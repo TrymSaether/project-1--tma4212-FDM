@@ -61,7 +61,8 @@ class Heat:
             T = int(self.k / tf)
         I = eye(self.N)
         
-        A = factorized((I - (self.r / 2) * self.L).tocsc())
+        # A = factorized((I - (self.r / 2) * self.L).tocsc())
+        A = I - (self.r / 2) * self.L
         B = I + (self.r / 2) * self.L + (self.k * self.a) * I
     
         self.U = self.set_BC(self.U, 0)
@@ -74,7 +75,7 @@ class Heat:
     
             # Predictor
             b = B @ self.U
-            U_ = A(b)
+            U_ = spsolve(A, b)
             U_ = self.set_BC(U_, n * self.k)
 
             # Corrector
@@ -188,9 +189,7 @@ class Heat:
         return anim
 
 
-def g0(x, y, t): 
+def g0(x, y, t):
     return np.sin(np.pi * x) * np.sin(np.pi * y) * np.exp(-2 * np.pi**2 * t)
-
 def u0(x, y):
     return np.sin(np.pi * x) * np.sin(np.pi * y)
-
