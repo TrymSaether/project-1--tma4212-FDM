@@ -8,7 +8,7 @@ In this case, we have an event at \(t=8\) that increases the infection rate in t
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.5\textwidth]{figures/infected_progression.png}
+  \includegraphics[width=0.9\textwidth]{figures/infected_progression.png}
   \caption{Infected population over time.}
   \label{fig:infected_progression}
 \end{figure}
@@ -19,3 +19,4 @@ By combining a two-dimensional diffusion operator (for $S$ and $I$) with the usu
   \item \textbf{Modified \(\beta(x,y,t)\)}: represents spatiotemporal heterogeneity, e.g.\ higher infection rates in the central region or for certain times.
 \end{itemize}
 Though we used straightforward explicit Euler in time, the moderate diffusion and relatively small \(\Delta t\) suffice to maintain stability. More advanced time-stepping schemes (like Crank--Nicolson) could also be adapted for faster runs if necessary. Overall, our setup provides a flexible environment to explore how disease waves propagate and to visualize key features of spatio-temporal epidemics.
+
