@@ -271,12 +271,12 @@ this is true.
 Hence the proposed two-stage method inherits the main advantages of Crank--Nicolson (robust stability, second-order behavior) while treating the reaction term explicitly.
 
 \subsection{Numerical Verification}
-We verify the theoretical results by simulating the reaction-diffusion equation with a linear reaction term.
-Here the reaction term is given by \(f(u) = au\) with \(a = 1\), and the diffusion coefficient is set to \(\mu = 1\).
+We verify the theoretical results by performing a convergence analysis of the modified Crank--Nicolson scheme for the reaction-diffusion equation with a linear reaction term. The numerical solution is compared to the exact solution, and the error is computed for different grid sizes. The results are shown in Figure~\ref{fig:convergence_analysis_2d}.
+The parameters are set to \(\mu = 1\), \(L = 1\), \(a = 1\), and the initial condition is given by \(u(x,0) = \sin(\pi x)\).
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.5\textwidth]{figures/convergence_analysis_2d.png}
+  \includegraphics[width=0.8\textwidth]{figures/convergence_analysis_2d.png}
   \caption{Convergence analysis of the modified Crank--Nicolson scheme for the reaction-diffusion equation with a linear reaction term.}
   \label{fig:convergence_analysis_2d}
 \end{figure}
