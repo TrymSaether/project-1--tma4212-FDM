@@ -1,0 +1,264 @@
+\section{Theory}
+
+\subsection{Overview of the Numerical Method}
+
+We consider the reaction-diffusion equation
+\[
+    u_t \;=\; \mu\,u_{xx} \;+\; f(u),
+    \quad x \in (0,L),\quad t>0,
+\]
+where \(\mu > 0\) is the diffusion coefficient and \(f(u)\) is a reaction term. We discretize
+space by dividing \((0,L)\) into \(M+1\) subintervals of uniform width \(h = L/(M+1)\), so
+the grid points are \(x_m = m\,h\) for \(m = 0,\dots,M+1\). In time, we use a step \(k>0\),
+so \(t_n = n\,k\). Let \(U_m^n \approx u(x_m,t_n)\). Then we define the dimensionless
+parameter
+\[
+    r \;=\; \frac{\mu\,k}{h^2}.
+\]
+The scheme combines a Crank–Nicolson-like step for the diffusion term with an explicit
+component for the reaction. it approximates the spatial derivative at the midpoint between time steps. 
+It is unconditionally stable and second-order accurate in time and space. Concretely, each time-step consists of:
+
+\begin{enumerate}
+  \item \emph{Predictor}: approximate the diffusion term in a semi-implicit manner and
+  add an explicit reaction increment:
+  \[
+    U_m^\star 
+    \;=\; U_m^n 
+    \;+\; \frac{r}{2}\bigl(\delta_x^2 U_m^\star + \delta_x^2 U_m^n\bigr) 
+    \;+\; k\,f\bigl(U_m^n\bigr), \quad \text{where} \quad \delta_x^2 U_m^n = U_{m+1}^n - 2\,U_m^n + U_{m-1}^n.
+  \]
+
+
+  \item \emph{Corrector}: apply a midpoint update for the reaction:
+  \[
+    U_m^{n+1} 
+    \;=\; U_m^\star 
+    \;+\; \tfrac{k}{2}\,\Bigl(f\bigl(U_m^\star\bigr) - f\bigl(U_m^n\bigr)\Bigr).
+  \]
+\end{enumerate}
+
+Visually the scheme can be illustrated with a stencil as shown below. Clearly showing the discretization of 
+the domain and how this is used to calculate the next value in time with the diffusion term calculated 
+semi-implicitly and the reaction term explicity.
+
+
+\begin{tikzpicture}[scale=0.8]
+  % Define colors
+  \colorlet{pointcolor}{black}
+  \colorlet{gridcolor}{gray!30}
+  \colorlet{predictorcolor}{red!70!black}
+  \colorlet{correctorcolor}{blue!70!black}
+
+  % Axes
+  \draw[-stealth, thick] (0,0) -- (6.5,0) node[right] {$t$};
+  \draw[-stealth, thick] (0,0) -- (0,6.5) node[above] {$x$};
+
+  % Grid
+  \draw[step=0.5cm, gridcolor, thin] (0,0) grid (6,6);
+
+  % Add time labels
+  \foreach \x/\label in {0/0, 1/1, 2/2, 3/n, 4/{n+1}, 5/5, 6/N} {
+  \node[below] at (\x,0) {$t_{\label}$};
+  \draw (\x,-0.05) -- (\x,0.05);
+  }
+
+  % Add space labels
+  \foreach \y/\label in {0/0, 1/1, 2/{m-1}, 3/m, 4/{m+1}, 5/5, 6/M} {
+  \node[left] at (0,\y) {$x_{\label}$};
+  \draw (-0.05,\y) -- (0.05,\y);
+  }
+
+  % Highlight grid points for Crank-Nicolson stencil
+  \fill[pointcolor] (3,3) circle (1.5pt) node[left] {$U_m^n$};
+  \fill[pointcolor] (4,3) circle (1.5pt) node[right] {$U_m^{n+1}$};
+  \fill[pointcolor] (3,2) circle (1.5pt) node[left] {$U_{m-1}^n$};
+  \fill[pointcolor] (3,4) circle (1.5pt) node[left] {$U_{m+1}^n$};
+
+  % Add intermediate points for the predictor step
+  \fill[predictorcolor] (3.5,3) circle (1.5pt) node[above] {$U_m^\star$};
+  \fill[predictorcolor] (3.5,2) circle (1.5pt) node[right] {$U_{m-1}^\star$};
+  \fill[predictorcolor] (3.5,4) circle (1.5pt) node[right] {$U_{m+1}^\star$};
+
+  % Show the predictor step with arrows
+  \draw[->,-stealth, predictorcolor, thick] (3,3) -- (3.5,3);
+  \draw[->,-stealth, predictorcolor, thick, dashed] (3,2) -- (3.5,3);
+  \draw[->,-stealth, predictorcolor, thick, dashed] (3,4) -- (3.5,3);
+  \draw[->,-stealth, predictorcolor, thick, dashed] (3,2) -- (3.5,2);
+  \draw[->,-stealth, predictorcolor, thick, dashed] (3,4) -- (3.5,4);
+
+  % Show the corrector step with arrows
+  \draw[->,-stealth, correctorcolor, thick] (3.5,3) -- (4,3);
+  \draw[->,-stealth, correctorcolor, thick, dashed] (3.5,2) -- (4,3);
+  \draw[->,-stealth, correctorcolor, thick, dashed] (3.5,4) -- (4,3);
+
+  % Step size annotations
+  \draw[<->] (3,0.5) -- (4,0.5) node[midway, fill=white, font=\small] {$k$};
+  \draw[<->] (0.5,3) -- (0.5,4) node[midway, fill=white, font=\small] {$h$};
+
+  % Boundary and initial conditions
+  \draw[red, thick] (0,0) -- (0,6);
+  \draw[red, thick] (6,0) -- (6,6);
+  \draw[red, thick] (0,0) -- (6,0);
+  \draw[red, thick] (0,6) -- (6,6);
+
+  % boundary labels MÅ FIKSES!
+
+  % Crank-Nicolson scheme visualization
+  \node[below right, align=left, font=\small, fill=gray!10, rounded corners, inner sep=5pt]
+  at (6.5,6.5) {
+  \textbf{Crank-Nicolson:}\\
+  Step 1 \textcolor{predictorcolor}{(Predictor)}: $U_m^* = U_m^n + \frac{r}{2}(\delta_x^2 U_m^* + \delta_x^2 U_m^n) + k f(U_m^n)$ \hspace{5pt} \\
+  Step 2 \textcolor{correctorcolor}{(Corrector)}: $U_m^{n+1} = U_m^* + \frac{k}{2}(f(U_m^*) - f(U_m^n))$
+  };
+\end{tikzpicture}
+
+For the boundary conditions, either Dirichlet, Neumann, or Robin, one sets or solves for the boundary
+values \(U_0^n\), \(U_{M+1}^n\) at each step as usual.
+
+\subsection{Error Analysis}
+To analyze the correctness of the scheme it is critical to determine both the consistency and stability of the
+scheme. This is because a numerical method converges, as in, produces the true PDE solution as the grid is refined, 
+if and only if it is both consistent and stable. Consistency ensures the scheme’s discrete equations capture 
+the differential equation correctly. Stability ensures errors do not grow uncontrollably. Without both, one cannot 
+guarantee convergence.
+
+
+\subsubsection{Consistency}
+To determine the consistency of the modified Crank-Nicolson scheme for the PDE with the linear reaction term 
+$f(u) = au$, we analyze the local truncation error (LTE) by substituting the exact solution into our 
+numerical scheme.
+
+\begin{theorem}{Local truncation error for the modified Crank-Nicolson}{lte_cn}
+    For the PDE $u_t = \mu u_{xx} + au$ with constant $a$, the modified Crank-Nicolson scheme with steps $h$ (space) 
+    and $k$ (time) has local truncation error
+    \[
+      \|\tau_m^n\| = \mathcal{O}\!\left(k +\tfrac{h^4}{k}\right)
+    \]
+    where $u_m^n = u(x_m,t_n)$ is the exact solution and $U_m^n$ its numerical approximation.
+  
+    Under parabolic scaling $k \sim h^2$, the scheme achieves second-order accuracy:
+    \[
+      \|\tau_m^n\| = \mathcal{O}\!\left(h^2 + k^2\right)
+    \]
+\end{theorem}
+
+
+\begin{proof}[Proof of Theorem~\ref{thm:lte_cn}]
+    We analyze the truncation error by examining how the exact solution satisfies the numerical scheme.
+  
+    First, consider the central difference approximations for the second derivatives:
+    \begin{align*}
+      \delta_x^2 u_m^n     & = h^2u_{xx}(x_m,t_n) + \mathcal{O}(h^4)       \\
+      \delta_x^2 u_m^\star & = h^2u_{xx}(x_m,t_n) + \mathcal{O}(h^4 + k^4)
+    \end{align*}
+  
+    \textit{Step 1 (Predictor):} Substituting the exact solution into the first stage:
+    \begin{equation}
+      u_m^\star = u_m^n + \frac{r}{2}\left(\delta_x^2 u_m^\star + \delta_x^2 u_m^n\right) + kau_m^n = u_m^n + \frac{\mu k}{2}u_{xx}(x_m,t_n) + kau_m^n + \mathcal{O}(h^4 + k^4)
+    \end{equation}
+    \textit{Step 2 (Corrector):} For the second stage:
+    \begin{align*}
+      u_m^{n+1} & = u_m^\star + \frac{k}{2}(au_m^\star - au_m^n)
+    \end{align*}
+  
+    From the PDE, we know $u_t = \mu u_{xx} + au$ and can derive expressions for higher time derivatives. Using Taylor expansion:
+    \begin{align*}
+      u(x_m,t_n+k) & = u_m^n + ku_t + \frac{k^2}{2}u_{tt} + \frac{k^3}{6}u_{ttt} + \mathcal{O}(k^4)
+    \end{align*}
+  
+    Comparing this with our numerical solution, we obtain:
+    \begin{align*}
+      U_m^{n+1} - u_m^{n+1} & = \mathcal{O}(k^2 + h^4)
+    \end{align*}
+  
+    The local truncation error per step is thus:
+    \begin{align*}
+      \|\tau_m^{n+1}\| & = \frac{|U_m^{n+1} - u_m^{n+1}|}{k} = \mathcal{O}\left(k + \frac{h^4}{k}\right)
+    \end{align*}
+  
+    Under the parabolic scaling $k \sim h^2$, we have $\frac{h^4}{k} \sim h^2$, yielding second-order accuracy:
+    \begin{align*}
+      \|\tau_m^{n+1}\| = \mathcal{O}(h^2 + k^2)
+    \end{align*}
+\end{proof}
+  
+Hence, as stated in the theorem, if we choose \(k\) and \(h\) so that \(k \approx \mathrm{const}\times h^2\),
+the method achieves second-order accuracy in both time and space.
+
+\subsubsection{Stability Analysis}
+
+We now investigate whether the scheme can tolerate large time steps without amplification
+of numerical errors. For linear problems
+\(\,u_t = \mu\,u_{xx} + a\,u,\) we can do a von~Neumann or matrix analysis to see whether
+any Courant-like restriction arises.
+
+\paragraph{Matrix Formulation for the Linearized Problem.}
+Take \(f(u) = a\,u\). Then the predictor step in vector form reads
+\[
+  \bigl(I - \tfrac{r}{2}A\bigr)\,U^\star
+  \;=\;
+  \bigl(I + \tfrac{r}{2}A \;+\; k\,a\,I \bigr)\,U^n,
+  \quad\text{where }A = \delta_x^2.
+\]
+The corrector step becomes
+\[
+  U^{n+1}
+  \;=\;
+  U^\star \;+\;\tfrac{k\,a}{2}\,\bigl(U^\star - U^n\bigr).
+\]
+Combining them yields a single ``amplification matrix'' \(C\) from \(U^n\) to \(U^{n+1}\).
+One can show that the eigenvalues of \(C\) stay within \(\lvert\xi\rvert \le 1 + \mathcal{O}(k)\),
+for any \(r = \mu\,k/h^2\). Thus, no upper bound on \(k\) of the form \(k\le \mathrm{const}\times h^p\)
+is needed to maintain stability. This property is often referred to as being
+\emph{unconditionally stable} for the linear PDE.
+
+\paragraph{Von Neumann Argument (Periodic BC).}
+If we impose periodic boundary conditions, standard Fourier analysis leads to an
+amplification factor
+\[
+  \zeta(\beta) \;=\;
+  \Bigl(1 + \tfrac{k\,a}{2}\Bigr)\,\alpha(\beta) 
+  \;-\;
+  \tfrac{k\,a}{2},
+\]
+where \(\alpha(\beta)\) depends on \(r\,(\cos\beta h - 1)\). One finds
+\(\bigl|\zeta(\beta)\bigr| \le 1 + C\,k\) for all modes \(\beta\). Hence the scheme remains
+stable for any \(r\ge0\).
+
+\medskip
+\noindent
+\textbf{Conclusion (Stability).} When linearized about \(f(u)=a\,u\), the two-stage
+Crank–Nicolson scheme is \emph{unconditionally stable}, with no requirement
+\(k\lesssim h^p\). This extends to standard boundary conditions (Dirichlet, Neumann, or
+Robin) via a matrix argument.
+
+\subsection{Global Error and Convergence}
+
+By the Lax–Richtmyer equivalence theorem for linear PDEs, \emph{consistency} plus
+\emph{stability} implies \emph{convergence}. Thus the global error satisfies
+\[
+  \max_{m,n}\,\bigl|\,u(x_m,t_n) - U_m^n\bigr|
+  \;\le\;
+  C\,\bigl(k^2 + h^2\bigr),
+\]
+provided \(k \propto h^2\). In practical simulations of parabolic equations, one usually
+chooses \(k \approx \alpha \,h^2\) anyway, so the time and space discretization errors
+are balanced at \(\mathcal{O}(h^2)\).
+
+\medskip
+\noindent
+\textbf{Summary of Theoretical Properties:}
+\begin{itemize}
+    \item \textbf{Method Formulation:} The scheme uses a half-implicit, half-explicit approach
+          for the diffusion, combined with a midpoint-based reaction update.
+    \item \textbf{Consistency:} The local truncation error is \(\mathcal{O}(k^3 + k\,h^2)\),
+          implying second-order accuracy when \(k \sim h^2\).
+    \item \textbf{Unconditional Stability:} No CFL-type restriction is needed; stability
+          holds for all \(k\).
+    \item \textbf{Global Error:} Convergence of \(\mathcal{O}(h^2 + k^2)\) if one balances
+          \(k \approx \alpha\,h^2\).
+\end{itemize}
+
+Hence the proposed two-stage method inherits the main advantages of Crank–Nicolson
+(robust stability, second-order behavior) while treating the reaction term explicitly.
