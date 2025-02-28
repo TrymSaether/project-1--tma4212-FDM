@@ -1,12 +1,22 @@
 \section{Introduction}
-Mathematical models are essential for understanding infectious disease dynamics and predicting outbreak spread. 
-The Susceptible-Infected-Removed (SIR) model describes disease transmission but lacks spatial components, 
-which is critical for real-world comparison. To address this, the reaction-diffusion SIR model extends 
-the system to partial differential equations (PDEs) by incorporating diffusion terms that model population 
-mobility. This introduces computational challenges, requiring an efficient numerical approach for stability 
-and accuracy.  
+Mathematical models are essential for the modern world to function. They are tools that modern society could not 
+exist without. Specifically numerical models allow us to simulate a multitude of different scenerios, giving us 
+insights into the mechanics of our world. One example of this is disease modeling. Accurate modeling of infectious disease spread requires capturing both the dynamics of transmission and how that
+transmission propagates across space. While the classical Susceptible Infected Removed (SIR) model offers 
+insight into temporal evolution, it does not account for spatial movement of the population. To address 
+this limitation, we extend the SIR framework to a reaction--diffusion system, adding diffusion terms that 
+approximate individual mobility within a two-dimensional domain. 
 
-This report applies a finite difference method (FDM) for spatial discretization and a modified Crank-Nicolson 
-scheme for time integration, treating diffusion implicitly and reaction explicitly. The objectives are to 
-analyze the scheme’s numerical properties, validate it through numerical experiments, and investigate disease 
-spread under varying initial conditions and parameter settings.
+Such a PDE-based approach, however, raises numerical challenges: the diffusion and reaction components 
+interact in ways that can destabilize straightforward explicit methods. To overcome this, 
+we employ a finite difference method (FDM) in space combined with a modified Crank--Nicolson scheme in 
+time that handles the diffusion term implicitly and the reaction term explicitly. 
+
+This report focuses on the theoretical underpinnings of this approach, assessing consistency and stability 
+through classical analyses, then validates the method numerically. By exploring varying initial distributions 
+of infection, different parameter regimes, and dynamic infection rates, we illustrate how the method captures 
+key spatiotemporal patterns in disease spread while preserving computational efficiency and stability.
+
+
+
+
