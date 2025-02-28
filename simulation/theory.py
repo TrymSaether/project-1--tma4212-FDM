@@ -134,7 +134,8 @@ class Heat:
         fig.colorbar(surf, ax=ax, shrink=0.5, aspect=5)
 
         plt.tight_layout()
-        plt.show()
+        return fig, ax
+    
 
     def animate_solution(self, U_snapshots, t, fps=10):
         X, Y = self.get_grid()
@@ -197,11 +198,14 @@ def heat_example_1(Heat, g0, u0):
     mu = 1.0
     a = 1.0
 
-    heat = Heat(mu=1.0, a=1.0, n=25, g=g0)
-    heat.set_initial_condition(u0)
-    U_snapshots, t = heat.simulate(tf=10.0, snapshot_stride=10)
-    heat.plot_solution(t_idx=0, U_snapshots=U_snapshots, t=t)
+    heat = Heat(mu=1.0, a=1.0, n=75, g=g0)
+    heat.set_IC(u0)
+    U_snapshots, t = heat.simulate(tf=10.0, snapshot_stride=1)
+    fig, ax = heat.plot_solution(t_idx=0, U_snapshots=U_snapshots, t=t)
     heat.animate_solution(U_snapshots, t)
+    
+    return fig, ax
+    
 
 def heat_error_analysis_1(Heat, g0, u0):
     n = 25
@@ -214,7 +218,7 @@ def heat_error_analysis_1(Heat, g0, u0):
         for j, mu in enumerate(mu_l):
             for k, k_ in enumerate(k_l):
                 heat = Heat(mu=mu, a=a, g=g0, n=n)
-                heat.set_initial_condition(u0)
+                heat.set_IC(u0)
                 heat.set_k(k_)
                 U_snapshots, t = heat.simulate(tf=1.0, snapshot_stride=1)
                 X, Y = heat.get_grid()
@@ -234,123 +238,96 @@ def heat_error_analysis_1(Heat, g0, u0):
             ax[i, j].set_ylabel("Error")
         
     plt.tight_layout()
+    
+    return fig, ax
+    
+
+def plot_over_time(Heat, g0, u0):
+    heat = Heat(mu=1.0, a=1.0, n=25, g=g0)
+    heat.set_IC(u0)
+    U_snapshots, t = heat.simulate(tf=10.0, snapshot_stride=10)
+    
+    # Get center point values over time
+    center_idx = heat.n // 2
+    center_values = [U.reshape((heat.n + 1, heat.n + 1))[center_idx, center_idx] 
+                    for U in U_snapshots]
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    ax.plot(t, center_values, marker='o')
+    
+    ax.set_title("Heat Equation Solution at Center Point Over Time")
+    ax.set_xlabel("t")
+    ax.set_ylabel("u(0.5, 0.5, t)")
+    
+    plt.tight_layout()
+    return fig, ax
+
+def plot_over_space(Heat, g0, u0):
+    heat = Heat(mu=1.0, a=1.0, n=25, g=g0)
+    heat.set_IC(u0)
+    U_snapshots, t = heat.simulate(tf=10.0, snapshot_stride=10)
+    
+    # Get solution along y=0.5 for different times
+    mid_y = heat.n // 2
+    x = heat.x
+    
+    fig, ax = plt.subplots(figsize=(10, 8))
+    for i in range(0, len(t), len(t)//5):
+        U = U_snapshots[i].reshape((heat.n + 1, heat.n + 1))
+        ax.plot(x, U[mid_y, :], marker='o', label=f't={t[i]:.2f}')
+    
+    ax.set_title("Heat Equation Solution Along y=0.5")
+    ax.set_xlabel("x")
+    ax.set_ylabel("u(x, 0.5, t)")
+    ax.legend()
+    
+    plt.tight_layout()
+    return fig, ax
+
+def test_different_parameters(Heat, g0, u0):
+    mu_l = np.linspace(0.1, 3, 5)
+    a_l = np.linspace(-1, 1, 5)
+    k_l = [0.001, 0.01, 0.1, 0.5, 1.0]
+
+    fig, ax = plt.subplots(len(mu_l), len(a_l), figsize=(len(a_l) * 5, len(mu_l) * 5))
+    for i, mu in enumerate(mu_l):
+        for j, a in enumerate(a_l):
+            heat = Heat(mu=mu, a=a, n=25, g=g0)
+            heat.set_IC(u0)
+            
+            # Create legend handles for the k values
+            for k_, color in zip(k_l, ["r", "g", "b", "c", "m"]):
+                heat.set_k(k_)
+                U_snapshots, t = heat.simulate(tf=1.0, snapshot_stride=1)
+                
+                # Get center point values
+                center_idx = heat.n // 2
+                center_values = [U.reshape((heat.n + 1, heat.n + 1))[center_idx, center_idx] 
+                               for U in U_snapshots]
+                
+                ax[i, j].plot(t, center_values, marker="o", color=color, 
+                             label=f"k={k_}", markersize=2)
+            
+            ax[i, j].set_title(f"$\\mu={mu:.2f}, a={a:.2f}$")
+            ax[i, j].set_xlabel("$t$")
+            ax[i, j].set_ylabel("u(0.5, 0.5, t)")
+            if i == 0 and j == 0:  # Only show legend for first plot
+                ax[i, j].legend(fontsize=8)
+    
+    plt.tight_layout()
+    return fig, ax
+
+
+def main():
+    heat_example_1(Heat, g0, u0)
+    heat_error_analysis_1(Heat, g0, u0)
+    plot_over_time(Heat, g0, u0)
+    plot_over_space(Heat, g0, u0)
+    test_different_parameters(Heat, g0, u0)
     plt.show()
     
-    
+if __name__ == "__main__":
+    main()
 
 
-def u_exact(x, y, t, mu=1.0, a=0.0):
-    return np.sin(np.pi * x) * np.sin(np.pi * y) * np.exp(-(2 * np.pi**2 * mu - a) * t)
-
-
-def g_exact(x, y, t, mu=1.0, a=0.0):
-    return u_exact(x, y, t, mu, a)
-
-
-def u0_exact(x, y, mu=1.0, a=0.0):
-    return u_exact(x, y, 0, mu, a)
-
-
-def compute_errors(n_values, T=1.0, mu=1.0, a=0.0):
-    """
-    Compute L2 and L-infinity errors for various grid resolutions.
-    """
-    errors_L2 = np.zeros(len(n_values))
-    errors_Linf = np.zeros(len(n_values))
-    times = np.zeros(len(n_values))
-    
-    for i, n in enumerate(n_values):
-        start_time = time.time()
-    
-        heat = Heat(mu=mu, a=a, g=g_exact, n=n)
-        heat.set_IC(lambda x, y: u_exact(x, y, 0, mu, a))
-        
-        # Run simulation
-        U_snapshots, t = heat.simulate(tf=T, snapshot_stride=1)
-        times[i] = time.time() - start_time
-        
-        # Compute exact solution at final time
-        X, Y = heat.get_grid()
-        U_exact = u_exact(X, Y, T, mu, a).flatten()
-        
-        # Compute errors
-        error = U_snapshots[-1] - U_exact
-        errors_L2[i] = np.sqrt(np.mean(error**2))
-        errors_Linf[i] = np.max(np.abs(error))
-        
-        print(f"n={n}, h={1.0/n:.6f}, L2 Error={errors_L2[i]:.6e}, Linf Error={errors_Linf[i]:.6e}")
-    
-    return errors_L2, errors_Linf, times
-
-fig, (ax_k, ax_h) = plt.subplots(1, 2, figsize=(12, 6), dpi=150)
-
-n = 50
-h = 1.0/n
-mu = 1.0
-a = 1.0 
-T = 1.0
-
-k_values = np.logspace(-3, 2, 30)
-E_k = []
-for k in k_values:
-    heat = Heat(mu=1.0, a=1.0, n=50, g=g0)
-    heat.set_IC(u0)
-    heat.set_k(k)
-    h = heat.get_h()
-    
-    stride = max(1, int(T/(100*k))) 
-    U_snapshots, t = heat.simulate(tf=T, snapshot_stride=stride)
-    
-    X, Y = heat.get_grid()
-    U_exact_k = u_exact(X, Y, T, mu, a).flatten()
-    E_k.append(np.max(np.abs(U_snapshots[-1] - U_exact_k)))
-    print(f"k={k:.4e}, max error={E_k[-1]:.4e}")
-    
-
-ax_k.loglog(k_values, np.array(E_k), 'bo-', label='$\\mathcal{O}(k^p)$', linewidth=1.5)
-
-ax_k.loglog(k_values, k_values, 'k--', label=r'$\mathcal{O}(k)$', alpha=0.5)
-ax_k.loglog(k_values, k_values**2, 'k:', label=r'$\mathcal{O}(k^2)$')
-ax_k.loglog(k_values, k_values**3, 'k-.', label=r'$\mathcal{O}(k^3)$', alpha=0.5)
-
-ax_k.set_xlabel('Time Step $(k)$', fontsize=14)
-ax_k.set_ylabel('Error', fontsize=14)
-ax_k.set_title(f'Error vs Time Step', fontsize=20)
-ax_k.legend(fontsize=12)
-ax_k.grid(True)
-
-
-# =========== H-convergence ===========
-n_values = np.logspace(1, 2.5, 30, dtype=int)
-h_values = 1.0/n_values
-E_h = []
-
-for n in n_values:
-    k = 1.0/n
-    heat = Heat(mu=1.0, a=1.0, n=n, g=g0)
-    heat.set_IC(u0)
-    
-    stride = max(1, int(T/(100*k)))
-    U_snapshots, t = heat.simulate(tf=T, snapshot_stride=stride)
-    
-    X, Y = heat.get_grid()
-    U_exact = u_exact(X, Y, T, mu, a).flatten()
-    E_h.append(np.max(np.abs(U_snapshots[-1] - U_exact)))
-    print(f"n={n}, h={1.0/n:.4e}, k={k:.4e}, max error={E_h[-1]:.4e}")
-
-E_h = np.array(E_h)
-
-ax_h.loglog(h_values, E_h, 'ro-', label='$\\mathcal{O}(h^p)$', linewidth=1.5)
-ax_h.loglog(h_values, h_values, 'k--', label=r'$\mathcal{O}(h)$', alpha=0.5)
-ax_h.loglog(h_values, h_values**2, 'k:', label=r'$\mathcal{O}(h^2)$')
-
-ax_h.set_xlabel('Step Size $(h)$', fontsize=14)
-ax_h.set_ylabel('Error', fontsize=14)
-ax_h.set_title('Error vs Grid Size', fontsize=20)
-ax_h.legend(fontsize=10)
-ax_h.grid(True)
-
-plt.tight_layout()
-plt.savefig('heat_convergence.png', dpi=300)
-plt.show()
 
