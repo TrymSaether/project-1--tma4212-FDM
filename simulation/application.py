@@ -4,6 +4,7 @@ from matplotlib.animation import FuncAnimation
 from scipy.sparse import diags, coo_matrix, eye, kron
 
 
+
 # Define a custom colormap for infection and susceptible
 colors = ["#00FF00", "#FF0000"]  # Green for susceptible, red for infected
 sir_cm = plt.cm.colors.ListedColormap(colors)
@@ -107,7 +108,7 @@ class SIR:
             0.05,
             infection_text,
             transform=ax.transAxes,
-            bbox=dict(facecolor="white", alpha=0.7),
+            bbox=dict(facecolor="white", alpha=1),
         )
         ax.set_title("Initial Infection")
         ax.set_xlabel("$x$")
@@ -135,9 +136,9 @@ class SIR:
 
 
 N = 100
-tf = 20
+tf = 15
 dt = 0.001
-snapshot_stride = 20
+snapshot_stride = 10
 
 beta = 3.0
 gamma = 1.0
@@ -155,7 +156,7 @@ model = SIR(beta, gamma, muS, muI, N)
 model.set_infection(x0=0.1, y0=0.1, r=0.02, rate=rate)
 model.set_infection(x0=0.8, y0=0.8, r=0.02, rate=rate)
 
-event = {"t_ev": 8, "x0": 0.85, "y0": 0.85, "r": 0.1, "rate": rate}
+event = {"t_ev": 8.1, "x0": 0.85, "y0": 0.85, "r": 0.1, "rate": rate}
 
 
 (S, I), (X, Y), t = model.simulate(
@@ -212,3 +213,82 @@ def update(frame):
 anim = FuncAnimation(
     fig, update, frames=len(I), init_func=init, blit=False, interval=1, repeat=True
 )
+
+
+# Create visualization of the SIR model progression with S and I side by side
+fig = plt.figure(figsize=(16, 10))
+
+# Select specific time points to show the progression
+time_indices = [int(len(t)/10), int(len(t)/5), int(len(t)*2/5), int(len(t)*3/5), int(len(t)*4/5), -1]
+time_points = [t[i] for i in time_indices]
+
+for i, idx in enumerate(time_indices):
+    # Plot for Susceptible (S)
+    ax1 = fig.add_subplot(2, 3, i+1, projection='3d')
+    
+    # Get the 2D representation of susceptible data
+    S_2d = S[idx].reshape((N+1, N+1))
+    
+    # Plot S with viridis colormap
+    surf_s = ax1.plot_surface(
+        X, Y, S_2d, 
+        cmap='viridis',
+        edgecolor='none',
+        alpha=1,
+        antialiased=True
+    )
+    
+    # Set plot properties
+    ax1.set_title(f"t = {t[idx]:.2f}", fontsize=12)
+    ax1.set_xlabel("x", fontsize=10)
+    ax1.set_ylabel("y", fontsize=10)
+    ax1.set_zlabel("S %", fontsize=10)
+    ax1.set_zlim(0, 1.0)
+    
+    # Add annotation with susceptible statistics
+    s_percent = S[idx].sum() / len(S[idx]) * 100
+    ax1.text2D(0.05, 0.95, f"Susceptible: {s_percent:.2f}%", 
+               transform=ax1.transAxes, fontsize=10,
+               bbox=dict(facecolor='white', alpha=1))
+
+# Create a separate figure for Infected plots
+fig2 = plt.figure(figsize=(16, 10))
+
+for i, idx in enumerate(time_indices):
+    # Plot for Infected (I)
+    ax2 = fig2.add_subplot(2, 3, i+1, projection='3d')
+    
+    # Get the 2D representation of infection data
+    I_2d = I[idx].reshape((N+1, N+1))
+    
+    # Plot I with plasma colormap
+    surf_i = ax2.plot_surface(
+        X, Y, I_2d, 
+        cmap='plasma',
+        edgecolor='none',
+        antialiased=True
+    )
+    
+    # Set plot properties
+    ax2.set_title(f"t = {t[idx]:.2f}", fontsize=12)
+    ax2.set_xlabel("x", fontsize=10)
+    ax2.set_ylabel("y", fontsize=10)
+    ax2.set_zlabel("I %", fontsize=10)
+    ax2.set_zlim(0, 1.0)
+    
+    # Add annotation with infection statistics
+    i_percent = I[idx].sum() / len(I[idx]) * 100
+    ax2.text2D(0.05, 0.95, f"Infected: {i_percent:.2f}%", 
+               transform=ax2.transAxes, fontsize=10,
+               bbox=dict(facecolor='white'))
+
+# Add titles and adjust layout
+fig.suptitle("Progression of Susceptible Population Over Time", fontsize=16)
+fig2.suptitle("Progression of Infected Population Over Time", fontsize=16)
+
+fig.tight_layout()
+fig2.tight_layout()
+
+# fig.savefig("susceptible_progression.png", dpi=300)
+# fig2.savefig("infected_progression.png", dpi=300)
+plt.show()
