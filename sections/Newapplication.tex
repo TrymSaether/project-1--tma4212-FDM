@@ -40,7 +40,9 @@ vary over time for example periodic public gatherings.
 
 We subdivide \(\Omega=[0,L]\times [0,L]\) into an \(\!M\times M\) grid. Let \(h=L/M\) so that the grid points in
 each direction are \(x_i = i\,h\), for \(i=0,\dots,M\). Combining,
-\(\bigl\{(x_i, y_j)\bigr\}\) yields \(M^2\) internal variables for each unknown (\(S\) and \(I\)).
+\(\bigl\{(x_i, y_j)\bigr\}\) yields \(M^2\) internal variables for each unknown (\(S\) and \(I\)). We use a unit 
+square \((0,1)\times (0,1)\) with a \(50\times 50\) mesh for a compromise between resolution and runtime. A 
+larger mesh would capture finer diffusion details but slow the simulation significantly.
 
 We approximate \(\Delta u\approx \partial_x^2u+\partial_y^2u\) by standard central differences. In one dimension 
 (size \(M\)), the matrix for second differences is tridiagonal:
@@ -61,13 +63,14 @@ where \(\text{kron}\) is the Kronecker product and \(I\) is the \(M\times M\) id
 
 A no-flux boundary condition is chosen, effectively, \(\mu \Delta u\) is discretized so that outward flux is zero 
 at the domain edges. This is reflected by the modified diagonal entries for the topmost and bottommost rows 
-in \(L_{\text{1D}}\). This is typical of a homogeneous Neumann implementation in central differences.
+in \(L_{\text{1D}}\). This is typical of a homogeneous Neumann implementation in central differences.A Neumann 
+approach ensures people cannot exit or enter the domain, consistent with a self-contained population. 
 
 
 In the code, \(\beta=3\) and \(\gamma=1\) are chosen as baseline infection and recovery rates, matching simpler 
 1D SIR examples.  We set \(\mu_S\) and \(\mu_I\) to small values so that susceptible and infected individuals do 
 not diffuse too quickly.  The domain is \(L=1\), and we choose \(M=50\), 50 intervals in each dimension, and a 
-small time-step \(\text{dt} = 0.001\).  The simulation runs up to \(T=10\) units of time.
+small time-step \(\text{dt} = 0.001\) so that the PDE solution remains stable for the chosen parameters.
 
 
 For the initial conditions there are three modes of “infected” initialization:
@@ -77,7 +80,7 @@ For the initial conditions there are three modes of “infected” initializatio
   \item \(\texttt{n=2}\): Several random patches within the interior, mimicking local clusters.
 \end{itemize}
 We let \(S=1 - I\) initially (with \(R=0\)).  The choice of \( \approx 0.01\) sets how large the initial 
-infection fraction is.
+infection fraction is. The three distinct initial distributions show how infection geometry affects overall spread. 
 
 \subsubsection{Beta function}
 As previously stated, the SIR model is modified when a dynamic beta, meaning that beta is a function dependent on 
@@ -87,17 +90,10 @@ both time and space. This is implemented via:
   \;=\; \beta_0 \times \bigl[1 + 0.5\,e^{-100\,((x-\tfrac{L}{2})^2 + (y-\tfrac{L}{2})^2)}\bigr]
   \times \bigl[1 + 0.1 \sin(t-2)\bigr]\quad (\text{for }2\le t \le 2+\pi),
 \]
-and equals the constant \(\beta_0\) otherwise.
+and equals the constant \(\beta_0\) otherwise. The optional \(\texttt{dynamic\_beta}\) toggles a 
+time and space dependent infection rate to model gatherings.
 
-\subsection{Implementation Details}
-
-\paragraph{Sparse Matrix Storage.}
-Since our 2D Laplacian is large \((M^2\times M^2)\) but banded, we store it in sparse format via 
-\(\texttt{diags}\), \(\texttt{eye}\), and \(\texttt{kron}\). This greatly reduces memory usage and speeds up 
-matrix operations.  Each time-step, we multiply this matrix by \(\mathrm{S}\) and \(\mathrm{I}\) to account for 
-diffusion.
-
-\paragraph{Time-Stepping.}
+\subsubsection{Time-Stepping}
 Given \(\Delta t=\text{dt}\),
 \[
   S^{n+1} 
@@ -113,41 +109,3 @@ We also update
   R^{n+1} = R^n + \Delta t\,\bigl[\gamma\,I^n\bigr].
 \)
 If \(\beta\) is dynamic, we compute \(\beta(x,y,t)\) each step before forming the infection source term.
-
-\subsection{Justification of Choices}
-
-\begin{itemize}
-  \item \textbf{Domain and Grid:} We use a unit square \((0,1)\times (0,1)\) with a \(50\times 50\) mesh for a compromise between resolution and runtime. A larger mesh would capture finer diffusion details but slow the simulation significantly.
-  \item \textbf{Time Step:} We pick \(\Delta t = 0.001\) so that the PDE solution remains stable for the chosen parameters; in principle the method could allow larger \(\Delta t\), but high \(\beta\) and multiple infection clusters can demand refined time resolution for accurate capturing of fast infection waves.
-  \item \textbf{Boundary Conditions:} A near--Neumann approach ensures people cannot exit or enter the domain, consistent with a self-contained population. 
-  \item \textbf{Parameter Values:} Baseline \(\beta=3\) and \(\gamma=1\) produce a typical SIR behavior in well-known 1D test cases. Varying \(\mu_S\) and \(\mu_I\) influences how quickly each group moves about the domain.
-  \item \textbf{Initial Infections:} We tested three distinct initial distributions (\texttt{n=0,1,2}) to see how infection geometry affects overall spread. The optional \(\texttt{dynamic\_beta}\) toggles a time- and space-dependent infection rate to model ephemeral gatherings or hotspots.
-\end{itemize}
-
-\subsection{Code Commentary}
-
-\paragraph{Structure.}
-The \(\texttt{SIRSimulation}\) class encapsulates domain setup, matrix assembly, initial conditions, and time-stepping (\(\texttt{step}\)). The 2D arrays \(S,I,R\) are flattened to vectors of length \(M^2\). 
-
-\paragraph{Laplacian.}
-The method \(\texttt{laplacian()}\) constructs the 1D second-difference operator as \(\texttt{L}\), then forms the 2D operator via Kronecker products. The diagonal near the boundary is adjusted so that the first and last rows have \(-1\) on the diagonal, consistent with no-flux or partial Neumann boundary approximations.
-
-\paragraph{Integration Loop.}
-At each step, we compute reaction terms \(\beta SI\) and \(\gamma I\), plus diffusion terms \(\mu_S L\cdot S\) and \(\mu_I L\cdot I\). We then do an explicit Euler update in time:
-\[
-  S \gets S + \mathrm{dt}\times(\text{diffusion} - \beta S I),\quad
-  I \gets I + \mathrm{dt}\times(\text{diffusion} + \beta S I - \gamma I).
-\]
-An optional \(\beta\)-function can incorporate both a radial shape factor and a time-sinusoid, giving “hotspots” in space and fluctuating infection rates in time.
-
-\paragraph{Animation.}
-The \(\texttt{animate()}\) method updates in increments of 50 small steps (to keep the display from flickering). Matplotlib’s \(\texttt{FuncAnimation}\) drives the update loop, plotting the infected fraction in a 3D surface.
-
-\subsection{Concluding Remarks on the SIR Simulation}
-
-By combining a two-dimensional diffusion operator (for $S$ and $I$) with the usual SIR reaction terms, we capture how local infection spreads spatially. Our chosen domain and parameters illustrate various infection patterns:
-\begin{itemize}
-  \item \textbf{Small \(\mu_S,\mu_I\)}: keeps population mostly localized, leading to distinct infection clusters.
-  \item \textbf{Modified \(\beta(x,y,t)\)}: represents spatiotemporal heterogeneity, e.g.\ higher infection rates in the central region or for certain times.
-\end{itemize}
-Though we used straightforward explicit Euler in time, the moderate diffusion and relatively small \(\Delta t\) suffice to maintain stability. More advanced time-stepping schemes (like Crank--Nicolson) could also be adapted for faster runs if necessary. Overall, our setup provides a flexible environment to explore how disease waves propagate and to visualize key features of spatio-temporal epidemics.
