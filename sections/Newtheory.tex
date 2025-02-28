@@ -28,8 +28,6 @@ It is unconditionally stable and second-order accurate in time and space. Concre
           \;+\; \frac{r}{2}\bigl(\delta_x^2 U_m^\star + \delta_x^2 U_m^n\bigr)
           \;+\; k\,f\bigl(U_m^n\bigr), \quad \text{where} \quad \delta_x^2 U_m^n = U_{m+1}^n - 2\,U_m^n + U_{m-1}^n.
         \]
-
-
   \item \emph{Corrector}: apply a midpoint update for the reaction:
         \[
           U_m^{n+1}
@@ -37,12 +35,9 @@ It is unconditionally stable and second-order accurate in time and space. Concre
           \;+\; \tfrac{k}{2}\,\Bigl(f\bigl(U_m^\star\bigr) - f\bigl(U_m^n\bigr)\Bigr).
         \]
 \end{enumerate}
-
 Visually the scheme can be illustrated with a stencil as shown below. Clearly showing the discretization of
 the domain and how this is used to calculate the next value in time with the diffusion term calculated
 semi-implicitly and the reaction term explicity.
-
-
 \begin{tikzpicture}[scale=0.8]
   % Define colors
   \colorlet{pointcolor}{black}
@@ -112,23 +107,18 @@ semi-implicitly and the reaction term explicity.
   Step 2 \textcolor{correctorcolor}{(Corrector)}: $U_m^{n+1} = U_m^* + \frac{k}{2}(f(U_m^*) - f(U_m^n))$
   };
 \end{tikzpicture}
-
 For the boundary conditions, either Dirichlet, Neumann, or Robin, one sets or solves for the boundary
 values \(U_0^n\), \(U_{M+1}^n\) at each step as usual.
-
 \subsection{Error Analysis}
 To analyze the correctness of the scheme it is critical to determine both the consistency and stability of the
 scheme. This is because a numerical method converges, as in, produces the true PDE solution as the grid is refined,
 if and only if it is both consistent and stable. Consistency ensures the scheme’s discrete equations capture
 the differential equation correctly. Stability ensures errors do not grow uncontrollably. Without both, one cannot
 guarantee convergence.
-
-
 \subsubsection{Consistency}
 To determine the consistency of the modified Crank-Nicolson scheme for the PDE with the linear reaction term
 $f(u) = au$, we analyze the local truncation error (LTE) by substituting the exact solution into our
 numerical scheme.
-
 \begin{theorem}{Local truncation error for the modified Crank-Nicolson}{lte_cn}
   For the PDE $u_t = \mu u_{xx} + au$ with constant $a$, the modified Crank-Nicolson scheme with steps $h$ (space)
   and $k$ (time) has local truncation error
@@ -136,8 +126,7 @@ numerical scheme.
     \|\tau_m^n\| = \mathcal{O}\!\left(k +\tfrac{h^4}{k}\right)
   \]
   where $u_m^n = u(x_m,t_n)$ is the exact solution and $U_m^n$ its numerical approximation.
-
-  Under parabolic scaling $k \sim h^2$, the scheme achieves second-order accuracy:
+  Under parabolic scaling $k \propto h^2$, the scheme achieves second-order accuracy:
   \[
     \|\tau_m^n\| = \mathcal{O}\!\left(h^2 + k^2\right)
   \]
@@ -182,12 +171,9 @@ numerical scheme.
     \|\tau_m^{n+1}\| = \mathcal{O}(h^2 + k^2)
   \end{align*}
 \end{proof}
-
-Hence, as stated in the theorem, if we choose \(k\) and \(h\) so that \(k \approx \mathrm{const}\times h^2\),
+Hence, as stated in the theorem, if we choose \(k\) and \(h\) so that \(k \propto \mathrm{const}\times h^2\),
 the method achieves second-order accuracy in both time and space.
-
 \subsubsection{Stability Analysis}
-
 We investigate whether the scheme can tolerate large time steps without amplification of numerical errors, thus
 satisfing the conditions for stability.
 For linear problems
@@ -214,50 +200,37 @@ this is true.
     U_m^{n+1} & = U_m^\star + \frac{ka}{2}(U_m^\star - U_m^n)
   \end{align*}
 
-  Substituting the Fourier mode $U_m^n = \xi^n e^{i\beta mh}$ and letting
-  $U_m^\star = \xi^n \xi^\star e^{i\beta mh}$, we can use the identity
-  $e^{i\beta (m+1)h} - 2e^{i\beta mh} + e^{i\beta (m-1)h} = -4\sin^2(\beta h/2)e^{i\beta mh}$ and derive:
-
+  Substituting the Fourier modes $U_m^n = \xi^n e^{i\beta mh}$ and $U_m^\star = \xi^n \xi^\star e^{i\beta mh}$
+  
   \begin{align*}
-    \xi^\star & = \frac{1 - r\sin^2(\beta h/2) + ka}{1 + 2r\sin^2(\beta h/2)}
+    \xi^\star & = \frac{1 - r\sin^2(\beta h/2) + ka}{1 + 2r\sin^2(\beta h/2)}, \quad \text{where}\quad s = \sin^2(\beta h/2)
   \end{align*}
-
   For the second stage:
   \begin{align*}
     \xi^{n+1} & = \xi^n\left[\xi_\star\left(1 + \frac{ka}{2}\right) - \frac{ka}{2}\right]
   \end{align*}
-
   Therefore, the amplification factor is:
   \begin{align*}
     \xi & = \frac{\left(1 - r\sin^2(\beta h/2) + ka\right)\left(1 + \frac{ka}{2}\right) - \frac{ka}{2}\left(1 + 2r\sin^2(\beta h/2)\right)}{1 + 2r\sin^2(\beta h/2)}
   \end{align*}
-
   After algebraic simplification, and substituting $s = \sin^2(\beta h/2)$:
   \begin{align*}
     \xi & = \frac{1 - rs(1 + \tfrac{3}{2}ka) + ka + \tfrac{1}{2}k^2a^2}{1 + 2rs}
   \end{align*}
-
   Then for $a \geq 0$ and any $r > 0$, both numerator and denominator are positive with $\xi(s) < 1$ for all
   $s \in [0,1]$.
-
-  \medskip
 
   For $a < 0$, the worst case occurs at $s = 0$, giving:
   \begin{align*}
     \xi(0) & = 1 + ka + \frac{k^2a^2}{2} = 1 + ka\left(1 + \frac{ka}{2}\right)
   \end{align*}
-
   For sufficiently small $k$:
   \begin{align*}
     |\xi(0)| & \leq 1 + |a|k(1 + |a|k/2)
   \end{align*}
-
   Therefore, $|\xi| \leq 1 + Ck$ with $C = |a|(1 + |a|k/2) \approx |a|$ for small $k$, confirming the scheme is unconditionally stable.
 \end{proof}
-
-
 \subsubsection{Global Error and Convergence}
-
 \begin{theorem}{Lax Equivalence and Convergence of Crank--Nicolson}{cn_convergence}
   Since the modified Crank--Nicolson scheme is both consistent and stable, by the Lax Equivalence Theorem
   (Theorem~\ref{thm:lax}), it is convergent. Under the parabolic scaling $k \sim h^2$, the scheme achieves
@@ -265,11 +238,8 @@ this is true.
   \[
     \|e_m^n\| = \mathcal{O}\!\left(h^2 + k^2\right)
   \]
-
 \end{theorem}
-
 Hence the proposed two-stage method inherits the main advantages of Crank--Nicolson (robust stability, second-order behavior) while treating the reaction term explicitly.
-
 \subsection{Numerical Verification}
 We verify the theoretical results by performing a convergence analysis of the modified Crank--Nicolson scheme for the reaction-diffusion equation with a linear reaction term. The numerical solution is compared to the exact solution, and the error is computed for different grid sizes. The results are shown in Figure~\ref{fig:convergence_analysis_2d}.
 The parameters are set to \(\mu = 1\), \(L = 1\), \(a = 1\), and the initial condition is given by \(u(x,0) = \sin(\pi x)\).
